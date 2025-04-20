@@ -1,9 +1,8 @@
 // components/layouts/AppWindow.tsx
-
 import { useApps } from "@/hooks/useApp";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { Dispatch, useRef, useState } from "react";
+import { Dispatch, useRef } from "react";
 import { Rnd } from "react-rnd";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoCloseSharp } from "react-icons/io5";
@@ -29,7 +28,7 @@ export default function AppWindow({
   const { closeApp, minimizeApp, focusApp, focusedApp, minimizedApps } =
     useApps();
   const { theme } = useTheme();
-  const rndRef = useRef<any>(null);
+  const rndRef = useRef<any | null>(null);
   const isFocused = focusedApp === appName;
   const isMinimized = minimizedApps[appName];
 

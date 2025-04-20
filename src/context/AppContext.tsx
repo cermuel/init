@@ -1,7 +1,7 @@
 // context/AppsContext.tsx
 "use client";
 import { ContextType } from "@/types/context";
-import { createContext, useContext, useState } from "react";
+import { createContext, useState } from "react";
 
 export const AppsContext = createContext<ContextType["AppsState"] | undefined>(
   undefined

@@ -7,8 +7,6 @@ import { useEffect, useState } from "react";
 import { MdDarkMode, MdLightMode } from "react-icons/md";
 import { BsFullscreen, BsFullscreenExit } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
-import { BiLogoVisualStudio } from "react-icons/bi";
-import { IoTerminal } from "react-icons/io5";
 import Image from "next/image";
 import { useApps } from "@/hooks/useApp";
 import NotesApp from "@/components/apps/Notes";
