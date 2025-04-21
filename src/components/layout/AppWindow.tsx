@@ -40,7 +40,7 @@ export default function AppWindow({
       rndRef.current.updatePosition({ x: 50, y: 50 });
     } else {
       const width = window.innerWidth;
-      const height = window.innerHeight;
+      const height = window.innerHeight - 32;
       rndRef.current.updateSize({ width, height });
       rndRef.current.updatePosition({ x: 0, y: 0 });
     }

@@ -18,6 +18,8 @@ import LoadingScreen from "@/components/ui/LoadingScreen";
 import DesktopIcons from "@/components/ui/DesktopIcons";
 import CodeEditorApp from "@/components/apps/Code";
 import BrowserApp from "@/components/apps/Safari";
+import MusicApp from "@/components/apps/Music";
+import TerminalApp from "@/components/apps/Terminal";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -155,6 +157,28 @@ export default function Home() {
                 setIsMaximized={setIsMaximized}
               >
                 <BrowserApp />
+              </AppWindow>
+            )}
+
+            {openedApps.terminal && !minimizedApps.terminal && (
+              <AppWindow
+                appName="terminal"
+                title="Terminal"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <TerminalApp />
+              </AppWindow>
+            )}
+
+            {openedApps.music && !minimizedApps.music && (
+              <AppWindow
+                appName="music"
+                title="Music"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <MusicApp />
               </AppWindow>
             )}
           </>
