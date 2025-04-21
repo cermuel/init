@@ -18,7 +18,7 @@ const CallbackClient = () => {
         code: code,
         redirect_uri: `${window.location.origin}/callback`,
         client_id: "cd0028742e934e208e089105c84c97cc",
-        client_secret: process.env.SPOTIFY_CLIENT_SECRET!,
+        client_secret: process.env.NEXT_PUBLIC_SPOTIFY_CLIENT_SECRET!,
       });
 
       try {
