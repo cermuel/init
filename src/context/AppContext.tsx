@@ -1,7 +1,9 @@
 // context/AppsContext.tsx
 "use client";
 import { ContextType } from "@/types/context";
-import { createContext, useState } from "react";
+import { DesktopIconType } from "@/types/desktop";
+import { initialIcons } from "@/utils/desktop.items";
+import { createContext, Dispatch, useState } from "react";
 
 export const AppsContext = createContext<ContextType["AppsState"] | undefined>(
   undefined
@@ -33,6 +35,8 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
   const [focusedApp, setFocusedApp] = useState<ContextType["AppName"] | null>(
     null
   );
+
+  const [icons, setIcons] = useState<DesktopIconType[]>(initialIcons);
 
   const toggleApp = (app: ContextType["AppName"]) => {
     setOpenedApps((prev) => ({
@@ -69,9 +73,41 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     }
   };
 
+  const sortIcons = (
+    order: "asc" | "desc",
+    setIcons: Dispatch<any>,
+    icons: any
+  ) => {
+    const sorted = [...icons].sort((a, b) =>
+      order === "asc"
+        ? a.label.localeCompare(b.label)
+        : b.label.localeCompare(a.label)
+    );
+
+    // Snap sorted icons to grid positions (e.g., 4 per row)
+    const gap = 24;
+    const iconWidth = 80;
+    const iconHeight = 100;
+    const columns = 4;
+
+    const updated = sorted.map((icon, idx) => {
+      const col = idx % columns;
+      const row = Math.floor(idx / columns);
+      return {
+        ...icon,
+        x: col * (iconWidth + gap) + 20,
+        y: row * (iconHeight + gap) + 20,
+      };
+    });
+
+    setIcons(updated);
+  };
   return (
     <AppsContext.Provider
       value={{
+        icons,
+        setIcons,
+        sortBy: sortIcons,
         openedApps,
         minimizedApps,
         focusedApp,

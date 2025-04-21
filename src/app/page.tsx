@@ -14,6 +14,10 @@ import { ContextType } from "@/types/context";
 import { DockIcons } from "@/utils/dock.items";
 import { DockIconType } from "@/types/dock";
 import AppWindow from "@/components/layout/AppWindow";
+import LoadingScreen from "@/components/ui/LoadingScreen";
+import DesktopIcons from "@/components/ui/DesktopIcons";
+import CodeEditorApp from "@/components/apps/Code";
+import BrowserApp from "@/components/apps/Safari";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -75,8 +79,9 @@ export default function Home() {
 
   return (
     <>
+      <LoadingScreen />
       <div
-        className="min-h-screen max-lg:hidden w-full flex flex-col transition-all duration-300"
+        className="min-h-screen max-lg:hidden bg-cover w-full flex flex-col transition-all duration-300"
         style={{ backgroundImage: bgImage }}
       >
         {contextMenu.visible && (
@@ -111,16 +116,40 @@ export default function Home() {
             <li>{helpers.getFormattedDate()}</li>
           </ul>
         </nav>
-        <div className="flex-1">
+        <div className="flex-1 relative">
           <>
-            {openedApps.notes && !minimizedApps.notes && focusedApp && (
+            <DesktopIcons />
+
+            {openedApps.notes && !minimizedApps.notes && (
               <AppWindow
-                appName={focusedApp || ""}
-                title={focusedApp || ""}
+                appName="notes"
+                title="Notes"
                 isMaximized={isMaximized}
                 setIsMaximized={setIsMaximized}
               >
                 <NotesApp />
+              </AppWindow>
+            )}
+
+            {openedApps.code && !minimizedApps.code && (
+              <AppWindow
+                appName="code"
+                title="Code"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <CodeEditorApp />
+              </AppWindow>
+            )}
+
+            {openedApps.safari && !minimizedApps.safari && (
+              <AppWindow
+                appName="safari"
+                title="Safari"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <BrowserApp />
               </AppWindow>
             )}
           </>

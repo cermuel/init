@@ -2,7 +2,7 @@
 import { useApps } from "@/hooks/useApp";
 import { useTheme } from "next-themes";
 import Image from "next/image";
-import { Dispatch, useRef } from "react";
+import { Dispatch, useEffect, useRef } from "react";
 import { Rnd } from "react-rnd";
 import { motion, AnimatePresence } from "framer-motion";
 import { IoCloseSharp } from "react-icons/io5";
@@ -72,7 +72,7 @@ export default function AppWindow({
               ${isFocused ? "z-50" : "z-40"}
             `}
           >
-            <div className="flex flex-col h-full pt-8">
+            <div className="flex flex-col h-full">
               <div
                 className={`app-header ${
                   isMaximized ? "rounded-none" : "rounded-t-xl"
@@ -102,7 +102,7 @@ export default function AppWindow({
                   }`}
                 >
                   <button
-                    className="p-[3px] flex items-center justify-center bg-[#28C840] rounded-full"
+                    className="p-[3px] cursor-pointer flex items-center justify-center bg-[#28C840] rounded-full"
                     onClick={toggleMaximize}
                   >
                     {isMaximized ? (
@@ -112,20 +112,20 @@ export default function AppWindow({
                     )}
                   </button>
                   <button
-                    className="p-[0.5px] flex items-center justify-center bg-[#FEBC2E] rounded-full"
+                    className="p-[0.5px] cursor-pointer flex items-center justify-center bg-[#FEBC2E] rounded-full"
                     onClick={() => minimizeApp(appName)}
                   >
                     <HiMiniMinusSmall size={11} />
                   </button>
                   <button
-                    className="p-[1px] flex items-center justify-center bg-[#FF5F57] rounded-full"
+                    className="p-[1px] cursor-pointer flex items-center justify-center bg-[#FF5F57] rounded-full"
                     onClick={() => closeApp(appName)}
                   >
                     <IoCloseSharp size={10} />
                   </button>
                 </div>
               </div>
-              <div className="flex-1 overflow-auto bg-white">{children}</div>
+              <div className="flex-1 overflow-auto">{children}</div>
             </div>
           </Rnd>
         </motion.div>

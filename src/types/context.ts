@@ -1,3 +1,5 @@
+import { Dispatch } from "react";
+
 type AppName = "notes" | "music" | "photos" | "safari" | "code" | "terminal";
 
 type AppsState = {
@@ -9,6 +11,9 @@ type AppsState = {
   restoreApp: (app: AppName) => void;
   focusApp: (app: AppName) => void;
   focusedApp: AppName | null;
+  sortBy: (order: "asc" | "desc", setIcons: Dispatch<any>, icons: any) => void;
+  icons: any;
+  setIcons: any;
 };
 
 export type ContextType = {
