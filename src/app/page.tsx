@@ -80,7 +80,7 @@ export default function Home() {
   return (
     <>
       <LoadingScreen />
-      <div className="flex w-screen h-screen justify-center bg-black text-white">
+      <div className="flex w-screen h-screen justify-center lg:hidden bg-black text-white">
         <h1 className="font-medium text-xl text-center">
           Please open on a larger screen
         </h1>
