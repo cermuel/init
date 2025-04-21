@@ -80,6 +80,11 @@ export default function Home() {
   return (
     <>
       <LoadingScreen />
+      <div className="flex w-screen h-screen justify-center bg-black text-white">
+        <h1 className="font-medium text-xl text-center">
+          Please open on a larger screen
+        </h1>
+      </div>
       <div
         className="min-h-screen max-lg:hidden bg-cover w-full flex flex-col transition-all duration-300"
         style={{ backgroundImage: bgImage }}
