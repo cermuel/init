@@ -23,6 +23,7 @@ const goFullscreen = ({
   isFullScreen: boolean;
   setIsFullScreen: Dispatch<boolean>;
 }) => {
+  if (!document) return;
   const elem = document.documentElement as HTMLElement & {
     webkitRequestFullscreen?: () => void;
     webkitExitFullscreen?: () => void;

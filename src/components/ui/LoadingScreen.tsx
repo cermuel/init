@@ -53,6 +53,7 @@ export default function LoadingScreen() {
         width={80}
         height={80}
         className="opacity-90"
+        priority
       />
       <div className="mt-6 w-56 h-1 bg-white/30 rounded-full overflow-hidden">
         <div

@@ -20,6 +20,8 @@ import CodeEditorApp from "@/components/apps/Code";
 import BrowserApp from "@/components/apps/Safari";
 import MusicApp from "@/components/apps/Music";
 import TerminalApp from "@/components/apps/Terminal";
+import { useDesktop } from "@/hooks/useDesktop";
+import BatteryWidget from "@/components/widgets/BatteryWidget";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -39,6 +41,7 @@ export default function Home() {
     focusApp,
     focusedApp,
   } = useApps();
+  const { customBg } = useDesktop();
 
   const handleDockApps = (app: ContextType["AppName"]) => {
     if (!openedApps[app]) {
@@ -56,8 +59,15 @@ export default function Home() {
       setContextMenu({ x: e.clientX, y: e.clientY, visible: true });
     };
 
-    const handleClick = () => {
-      setContextMenu((prev) => ({ ...prev, visible: false }));
+    const handleClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+
+      // Prevent closing the context menu if clicking on the file input or label
+      if (target.closest("label")?.textContent?.includes("Change Wallpaper")) {
+        return;
+      }
+
+      setContextMenu((prev: any) => ({ ...prev, visible: false }));
     };
 
     window.addEventListener("contextmenu", handleContextMenu);
@@ -74,10 +84,11 @@ export default function Home() {
 
   if (!mounted) return null;
 
-  const bgImage =
-    theme === "dark"
-      ? "url('/images/bg/dark-bg.svg')"
-      : "url('/images/bg/light-bg.svg')";
+  const bgImage = customBg
+    ? `url(${customBg})`
+    : theme === "dark"
+    ? "url('/images/bg/dark.svg')"
+    : "url('/images/bg/light.svg')";
 
   return (
     <>
@@ -88,11 +99,15 @@ export default function Home() {
         </h1>
       </div>
       <div
-        className="min-h-screen max-lg:hidden bg-cover w-full flex flex-col transition-all duration-300"
+        className="h-screen max-lg:hidden bg-cover bg-no-repeat w-full flex flex-col transition-all duration-300"
         style={{ backgroundImage: bgImage }}
       >
         {contextMenu.visible && (
-          <DesktopMenu top={contextMenu.y} left={contextMenu.x} />
+          <DesktopMenu
+            setContextMenu={setContextMenu}
+            top={contextMenu.y}
+            left={contextMenu.x}
+          />
         )}
         <nav
           className={`w-full z-100 h-8 flex justify-between items-center text-xs px-4 font-semibold ${

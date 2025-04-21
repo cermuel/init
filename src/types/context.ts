@@ -1,4 +1,5 @@
 import { Dispatch } from "react";
+import { WidgetIconType } from "./desktop";
 
 type AppName = "notes" | "music" | "photos" | "safari" | "code" | "terminal";
 
@@ -16,7 +17,18 @@ type AppsState = {
   setIcons: any;
 };
 
+type DesktopContextType = {
+  customBg: string | null;
+  setWallpaperFromFile: (file: File) => void;
+  resetWallpaper: () => void;
+  showIcons: boolean;
+  setShowIcons: Dispatch<boolean>;
+  widgets: WidgetIconType[];
+  setWidgets: Dispatch<WidgetIconType[]>;
+};
+
 export type ContextType = {
   AppName: AppName;
   AppsState: AppsState;
+  DesktopContext: DesktopContextType;
 };

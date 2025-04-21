@@ -2,18 +2,42 @@
 
 import { useApps } from "@/hooks/useApp";
 import { useTheme } from "next-themes";
-import React, { useState } from "react";
+import React, { Dispatch, useState } from "react";
 import { MdOutlineKeyboardArrowRight } from "react-icons/md";
 import { FaCaretLeft } from "react-icons/fa6";
+import { useDesktop } from "@/hooks/useDesktop";
 
-const DesktopMenu = ({ top, left }: { top: number; left: number }) => {
+const DesktopMenu = ({
+  top,
+  left,
+  setContextMenu,
+}: {
+  top: number;
+  left: number;
+  setContextMenu: Dispatch<any>;
+}) => {
   const { theme } = useTheme();
   const { sortBy, icons, setIcons, toggleApp } = useApps();
+  const {
+    setWallpaperFromFile,
+    customBg,
+    resetWallpaper,
+    showIcons,
+    setShowIcons,
+  } = useDesktop();
   const [hoveredItem, setHoveredItem] = useState<null | "new" | "sortBy">(null);
 
   const bg = theme === "dark" ? "bg-[#121212]" : "bg-[#F6F6F6]";
   const text = theme === "dark" ? "text-[#F6F6F6]" : "text-[#121212]";
   const divider = theme === "dark" ? "bg-white/10" : "bg-black/10";
+
+  const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    console.log({ e });
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setWallpaperFromFile(file);
+    console.log(file);
+  };
 
   return (
     <ul
@@ -108,8 +132,11 @@ const DesktopMenu = ({ top, left }: { top: number; left: number }) => {
         )}
       </li>
 
-      <li className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white">
-        Hide Desktop Icons
+      <li
+        onClick={() => setShowIcons(!showIcons)}
+        className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+      >
+        {showIcons ? "Hide" : "Show"} Desktop Icons
       </li>
 
       {/* Divider */}
@@ -117,9 +144,24 @@ const DesktopMenu = ({ top, left }: { top: number; left: number }) => {
         <div className={`w-full h-[1px] ${divider}`}></div>
       </div>
 
-      <li className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white">
-        Change Wallpaper...
-      </li>
+      <label className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white">
+        Change Wallpaper
+        <input
+          type="file"
+          className="hidden"
+          onChange={handleUpload}
+          accept="image/*"
+        />
+      </label>
+
+      {customBg && (
+        <li
+          onClick={() => resetWallpaper()}
+          className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+        >
+          Reset Wallpaper
+        </li>
+      )}
     </ul>
   );
 };

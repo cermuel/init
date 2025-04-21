@@ -2,7 +2,7 @@
 "use client";
 import { ContextType } from "@/types/context";
 import { DesktopIconType } from "@/types/desktop";
-import { initialIcons } from "@/utils/desktop.items";
+import { getInitialIcons } from "@/utils/desktop.items";
 import { createContext, Dispatch, useState } from "react";
 
 export const AppsContext = createContext<ContextType["AppsState"] | undefined>(
@@ -36,7 +36,9 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     null
   );
 
-  const [icons, setIcons] = useState<DesktopIconType[]>(initialIcons);
+  const [icons, setIcons] = useState<DesktopIconType[]>(() =>
+    getInitialIcons()
+  );
 
   const toggleApp = (app: ContextType["AppName"]) => {
     setOpenedApps((prev) => ({
