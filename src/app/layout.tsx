@@ -18,8 +18,18 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html suppressHydrationWarning>
       <body>
         <Head>
-          <link rel="preload" as="image" href="/images/bg/dark.svg" />{" "}
-          <link rel="preload" as="image" href="/images/bg/light.svg" />
+          <link
+            rel="preload"
+            as="image"
+            href="/images/bg/light.svg"
+            type="image/svg+xml"
+          />
+          <link
+            rel="preload"
+            as="image"
+            href="/images/bg/dark.svg"
+            type="image/svg+xml"
+          />
         </Head>
         <ThemeProvider attribute="class">
           <DesktopProvider>

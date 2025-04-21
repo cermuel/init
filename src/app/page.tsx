@@ -90,6 +90,11 @@ export default function Home() {
     ? "url('/images/bg/dark.svg')"
     : "url('/images/bg/light.svg')";
 
+  const bgImagePriority = customBg
+    ? `${customBg}`
+    : theme === "dark"
+    ? "/images/bg/dark.svg"
+    : "/images/bg/light.svg";
   return (
     <>
       <LoadingScreen />
@@ -99,9 +104,18 @@ export default function Home() {
         </h1>
       </div>
       <div
-        className="h-screen max-lg:hidden bg-cover bg-no-repeat w-full flex flex-col transition-all duration-300"
-        style={{ backgroundImage: bgImage }}
+        className="h-screen max-lg:hidden w-full relative flex flex-col transition-all duration-300"
+        // style={{ backgroundImage: bgImage }}
       >
+        <Image
+          src={bgImagePriority}
+          width={100}
+          height={100}
+          priority={true}
+          alt=""
+          className="w-screen h-screen object-cover fixed top-0 left-0"
+        />
+
         {contextMenu.visible && (
           <DesktopMenu
             setContextMenu={setContextMenu}
