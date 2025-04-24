@@ -1,5 +1,5 @@
 import { Dispatch } from "react";
-import { WidgetIconType } from "./desktop";
+import { DesktopIconType, WidgetIconType, WidgetType } from "./desktop";
 
 type AppName = "notes" | "music" | "photos" | "safari" | "code" | "terminal";
 
@@ -25,6 +25,20 @@ type DesktopContextType = {
   setShowIcons: Dispatch<boolean>;
   widgets: WidgetIconType[];
   setWidgets: Dispatch<WidgetIconType[]>;
+  showWidgetManager: boolean;
+  setShowWidgetManager: Dispatch<boolean>;
+  addWidget: ({
+    newWidget,
+    icons,
+    widgets,
+    index,
+  }: {
+    newWidget: WidgetIconType;
+    icons: DesktopIconType[];
+    widgets: WidgetIconType[];
+    index: number;
+  }) => void;
+  removeWidget: (Widget: WidgetIconType) => void;
 };
 
 export type ContextType = {

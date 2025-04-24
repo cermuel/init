@@ -1,0 +1,117 @@
+.clock {
+  width: 150px;
+  height: 150px;
+  border-radius: 50%;
+  box-shadow: 0 1px 15px rgba(0, 0, 0, 0.2);
+  color: #444;
+  text-align: center;
+  background: #fff;
+  position: relative;
+}
+
+.hour_hand {
+  position: absolute;
+  width: 3px;
+  height: 30px;
+  background: #222;
+  top: 30%;
+  left: 48.5%;
+  transform-origin: bottom;
+}
+
+.min_hand {
+  position: absolute;
+  width: 2px;
+  height: 40px;
+  background: #444;
+  top: 22.5%;
+  left: 48.5%;
+  transform-origin: bottom;
+}
+
+.sec_hand {
+  position: absolute;
+  width: 1px;
+  height: 59px;
+  background: red;
+  top: 10.5%;
+  left: 50%;
+  transform-origin: bottom;
+}
+.clock span {
+  position: absolute;
+  font-family: "Source Sans Pro", sans-serif;
+  font-weight: 700;
+}
+
+.twelve {
+  /* top: %; */
+  left: 42%;
+  font-size: 18px;
+}
+
+.one {
+  top: 6%;
+  left: 70%;
+  font-size: 18px;
+}
+
+.two {
+  top: 20%;
+  left: 83%;
+  font-size: 18px;
+}
+
+.three {
+  top: 40%;
+  left: 90%;
+  font-size: 18px;
+}
+
+.four {
+  top: 62%;
+  left: 85%;
+  font-size: 18px;
+}
+
+.five {
+  top: 78%;
+  font-size: 18px;
+  left: 68%;
+}
+
+.six {
+  top: 84%;
+  left: 46.5%;
+  font-size: 18px;
+}
+
+.seven {
+  top: 78%;
+  left: 24%;
+  font-size: 18px;
+}
+
+.eight {
+  top: 62%;
+  left: 8%;
+  font-size: 18px;
+}
+
+.nine {
+  top: 40%;
+  left: 6%;
+  font-size: 18px;
+}
+
+.ten {
+  top: 21%;
+  left: 9%;
+  font-size: 17px;
+}
+
+.eleven {
+  top: 6%;
+  left: 22%;
+  font-size: 17px;
+}

@@ -40,21 +40,21 @@ export default function BatteryWidget() {
   }, []);
 
   const getBatteryIcon = () => {
-    if (isCharging) return <IoBatteryCharging size={40} />;
-    if (batteryLevel > 80) return <FaBatteryFull size={40} />;
-    if (batteryLevel > 30) return <FaBatteryHalf size={40} />;
-    return <FaBatteryEmpty size={40} />;
+    if (isCharging) return <IoBatteryCharging size={50} />;
+    if (batteryLevel > 80) return <FaBatteryFull size={50} />;
+    if (batteryLevel > 30) return <FaBatteryHalf size={50} />;
+    return <FaBatteryEmpty size={50} />;
   };
 
   return (
     <div
       draggable={false}
-      className={`flex absolute flex-col items-start justify-center p-1 gap-8 ${
-        theme == "dark" ? "bg-black/30 " : "bg-white/40 "
+      className={`flex absolute flex-col items-start justify-center p-1 gap-8 w-full h-full ${
+        theme == "dark" ? "bg-black/30 " : "bg-white/20 "
       } ${isCharging ? "text-[#4CD964]" : "text-white"} text-xs rounded-xl p-4`}
     >
       {getBatteryIcon()}
-      <p className="text-5xl text-white">{batteryLevel}%</p>
+      <p className="text-[450%] font-semibold text-white">{batteryLevel}%</p>
     </div>
   );
 }

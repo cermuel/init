@@ -21,7 +21,7 @@ import BrowserApp from "@/components/apps/Safari";
 import MusicApp from "@/components/apps/Music";
 import TerminalApp from "@/components/apps/Terminal";
 import { useDesktop } from "@/hooks/useDesktop";
-import BatteryWidget from "@/components/widgets/BatteryWidget";
+import WidgetManager from "@/components/widgets/WidgetManager";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -88,13 +88,13 @@ export default function Home() {
     ? `url(${customBg})`
     : theme === "dark"
     ? "url('/images/bg/dark.svg')"
-    : "url('/images/bg/light.svg')";
+    : "url('/images/bg/light.jpg')";
 
   const bgImagePriority = customBg
     ? `${customBg}`
     : theme === "dark"
     ? "/images/bg/dark.svg"
-    : "/images/bg/light.svg";
+    : "/images/bg/light.jpg";
   return (
     <>
       <LoadingScreen />
@@ -104,18 +104,19 @@ export default function Home() {
         </h1>
       </div>
       <div
-        className="h-screen max-lg:hidden w-full relative flex flex-col transition-all duration-300"
-        // style={{ backgroundImage: bgImage }}
+        className="h-screen max-lg:hidden w-full relative bg-cover flex flex-col transition-all duration-300"
+        style={{ backgroundImage: customBg == null ? bgImage : "" }}
       >
-        <Image
-          src={bgImagePriority}
-          width={100}
-          height={100}
-          priority={true}
-          alt=""
-          className="w-screen h-screen object-cover fixed top-0 left-0"
-        />
-
+        {customBg !== null && (
+          <Image
+            src={bgImagePriority}
+            width={10000}
+            height={10000}
+            priority
+            alt=""
+            className="w-screen h-screen object-cover fixed top-0 left-0"
+          />
+        )}
         {contextMenu.visible && (
           <DesktopMenu
             setContextMenu={setContextMenu}
@@ -154,6 +155,7 @@ export default function Home() {
         </nav>
         <div className="flex-1 relative">
           <>
+            <WidgetManager />
             <DesktopIcons />
 
             {openedApps.notes && !minimizedApps.notes && (
@@ -212,7 +214,7 @@ export default function Home() {
             )}
           </>
         </div>
-        <div className="fixed bottom-0 flex w-full z-100 justify-center">
+        <div className="fixed bottom-0 flex w-full z-90 justify-center">
           <div
             className={`w-auto z-100 py-4 translate-y-0 ${
               isMaximized && "translate-y-20 hover:translate-y-0"

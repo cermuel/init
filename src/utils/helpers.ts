@@ -61,8 +61,84 @@ const generateNewIconPosition = (existingIcons: DesktopIconType[]) => {
   return { x: 20, y: 20 }; // fallback
 };
 
+const handleSaveStickyNote = (id: string, content: string) => {
+  const savedWidgets = JSON.parse(localStorage.getItem("init_widgets") || "[]");
+  const updatedWidgets = savedWidgets.map((widget: any) =>
+    widget.id === id ? { ...widget, content } : widget
+  );
+  localStorage.setItem("init_widgets", JSON.stringify(updatedWidgets));
+};
+
+const ICON_WIDTH = 80;
+const ICON_HEIGHT = 100;
+const WIDGET_WIDTH = 160;
+const WIDGET_HEIGHT = 180;
+
+const checkCollision = (
+  x: number,
+  y: number,
+  currentIndex: number,
+  isWidget: boolean,
+  icons: any[],
+  widgets: any[]
+) => {
+  const allItems = [
+    ...icons.map((icon: any, i: number) => ({
+      x: icon.x,
+      y: icon.y,
+      width: ICON_WIDTH,
+      height: ICON_HEIGHT,
+      skip: !isWidget && i === currentIndex,
+    })),
+    ...widgets.map((widget: any, i: number) => ({
+      x: widget.x,
+      y: widget.y,
+      width: WIDGET_WIDTH,
+      height: WIDGET_HEIGHT,
+      skip: isWidget && i === currentIndex,
+    })),
+  ];
+
+  const draggedWidth = isWidget ? WIDGET_WIDTH : ICON_WIDTH;
+  const draggedHeight = isWidget ? WIDGET_HEIGHT : ICON_HEIGHT;
+
+  return allItems.some((item) => {
+    if (item.skip) return false;
+    return (
+      x < item.x + item.width &&
+      x + draggedWidth > item.x &&
+      y < item.y + item.height &&
+      y + draggedHeight > item.y
+    );
+  });
+};
+const resolveCollision = (
+  x: number,
+  y: number,
+  currentIndex: number,
+  isWidget: boolean,
+  icons: any[],
+  widgets: any[]
+) => {
+  const step = 20;
+  let attempts = 0;
+
+  while (
+    checkCollision(x, y, currentIndex, isWidget, icons, widgets) &&
+    attempts < 100
+  ) {
+    x += step;
+    y += step;
+    attempts++;
+  }
+
+  return { x, y };
+};
+
 export const helpers = {
   getFormattedDate,
   goFullscreen,
   generateNewIconPosition,
+  handleSaveStickyNote,
+  resolveCollision,
 };

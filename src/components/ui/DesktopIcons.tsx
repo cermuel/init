@@ -8,6 +8,8 @@ import { ContextType } from "@/types/context";
 import { DesktopIconType, WidgetIconType } from "@/types/desktop";
 import { useDesktop } from "@/hooks/useDesktop";
 import BatteryWidget from "../widgets/BatteryWidget";
+import StickyNotesWidget from "../widgets/StickyNotesWidget";
+import { helpers } from "@/utils/helpers";
 
 export default function DesktopIcons() {
   const { toggleApp, icons, setIcons } = useApps();
@@ -17,76 +19,9 @@ export default function DesktopIcons() {
     toggleApp(app);
   };
 
-  const ICON_WIDTH = 80;
-  const ICON_HEIGHT = 100;
-  const WIDGET_WIDTH = 160;
-  const WIDGET_HEIGHT = 180;
-
-  const checkCollision = (
-    x: number,
-    y: number,
-    currentIndex: number,
-    isWidget: boolean,
-    icons: any[],
-    widgets: any[]
-  ) => {
-    const allItems = [
-      ...icons.map((icon: any, i: number) => ({
-        x: icon.x,
-        y: icon.y,
-        width: ICON_WIDTH,
-        height: ICON_HEIGHT,
-        skip: !isWidget && i === currentIndex,
-      })),
-      ...widgets.map((widget: any, i: number) => ({
-        x: widget.x,
-        y: widget.y,
-        width: WIDGET_WIDTH,
-        height: WIDGET_HEIGHT,
-        skip: isWidget && i === currentIndex,
-      })),
-    ];
-
-    const draggedWidth = isWidget ? WIDGET_WIDTH : ICON_WIDTH;
-    const draggedHeight = isWidget ? WIDGET_HEIGHT : ICON_HEIGHT;
-
-    return allItems.some((item) => {
-      if (item.skip) return false;
-      return (
-        x < item.x + item.width &&
-        x + draggedWidth > item.x &&
-        y < item.y + item.height &&
-        y + draggedHeight > item.y
-      );
-    });
-  };
-
-  const resolveCollision = (
-    x: number,
-    y: number,
-    currentIndex: number,
-    isWidget: boolean,
-    icons: any[],
-    widgets: any[]
-  ) => {
-    const step = 20;
-    let attempts = 0;
-
-    while (
-      checkCollision(x, y, currentIndex, isWidget, icons, widgets) &&
-      attempts < 100
-    ) {
-      x += step;
-      y += step;
-      attempts++;
-    }
-
-    return { x, y };
-  };
-
   const handleDragStop = (index: number, x: number, y: number) => {
     const newIcons = [...icons];
-    const { x: newX, y: newY } = resolveCollision(
+    const { x: newX, y: newY } = helpers.resolveCollision(
       x,
       y,
       index,
@@ -100,7 +35,7 @@ export default function DesktopIcons() {
 
   const handleDragStopWidgets = (index: number, x: number, y: number) => {
     const newWidgets = [...widgets];
-    const { x: newX, y: newY } = resolveCollision(
+    const { x: newX, y: newY } = helpers.resolveCollision(
       x,
       y,
       index,
@@ -152,18 +87,32 @@ export default function DesktopIcons() {
         {widgets.map((widget: WidgetIconType, index: number) => (
           <Rnd
             key={index}
-            size={{ width: 170, height: 190 }}
+            size={{
+              width: 170,
+              height: widget.type == "DigitalClock" ? 120 : 190,
+            }}
             position={{ x: widget.x, y: widget.y }}
             bounds="parent"
-            enableResizing={false}
-            className="z-20 transition-all duration-50"
+            className="z-20 transition-all duration-50 relative"
             onDragStop={(_, data) =>
               handleDragStopWidgets(index, data.x, data.y)
             }
           >
             <div className="w-full h-full flex justify-center items-center">
-              {" "}
-              {widget.widget()}
+              {widget.type == "StickyNotes" ? (
+                <StickyNotesWidget
+                  id={widget.id}
+                  content={widget.content || ""}
+                  onSave={() =>
+                    helpers.handleSaveStickyNote(
+                      widget.id,
+                      widget.content || ""
+                    )
+                  }
+                />
+              ) : widget.widget !== null ? (
+                widget.widget()
+              ) : null}
             </div>
             {/* <div
             onDoubleClick={() => openApp(icon.name)}

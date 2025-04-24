@@ -11,7 +11,18 @@ export type DesktopIconType = {
 };
 
 export type WidgetIconType = {
-  widget: () => React.JSX.Element;
+  id: string; // Unique identifier for the widget
+  type: "Battery" | "Clock" | "StickyNotes" | "DigitalClock";
   x: number;
   y: number;
+  content?: string;
+  widget: () => React.JSX.Element; // The widget component
+};
+
+export type WidgetType = {
+  id: string;
+  type: "Clock" | "StickyNotes" | "Battery";
+  x: number;
+  y: number;
+  content?: string;
 };

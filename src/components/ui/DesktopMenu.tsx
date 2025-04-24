@@ -24,6 +24,7 @@ const DesktopMenu = ({
     resetWallpaper,
     showIcons,
     setShowIcons,
+    setShowWidgetManager,
   } = useDesktop();
   const [hoveredItem, setHoveredItem] = useState<null | "new" | "sortBy">(null);
 
@@ -32,11 +33,9 @@ const DesktopMenu = ({
   const divider = theme === "dark" ? "bg-white/10" : "bg-black/10";
 
   const handleUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    console.log({ e });
     const file = e.target.files?.[0];
     if (!file) return;
     setWallpaperFromFile(file);
-    console.log(file);
   };
 
   return (
@@ -130,6 +129,13 @@ const DesktopMenu = ({
             </li>
           </ul>
         )}
+      </li>
+
+      <li
+        onClick={() => setShowWidgetManager(true)}
+        className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+      >
+        Manage Widgets
       </li>
 
       <li
