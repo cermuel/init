@@ -20,7 +20,7 @@ const VoiceAssistant = () => {
     // handleSubmit();
     // const openapi = async () => {
     //   const client = new OpenAI({
-    //     apiKey: process.env.NEXT_PUBLIC_OPENAI_API
+    //     apiKey: process.env.OPENAI_API
     //       dangerouslyAllowBrowser: true,
     //   });
     //   const response = await client.responses.create({

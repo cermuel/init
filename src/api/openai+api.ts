@@ -1,6 +1,6 @@
 import axios from "axios";
 
-const OPENAI_API_KEY = process.env.NEXT_PUBLIC_OPENAI_API!;
+const OPENAI_API_KEY = process.env.OPENAI_API!;
 const openai = axios.create({
   headers: {
     "Content-Type": "application/json",
