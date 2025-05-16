@@ -20,9 +20,8 @@ const VoiceAssistant = () => {
     // handleSubmit();
     // const openapi = async () => {
     //   const client = new OpenAI({
-    //     apiKey:
-    //       "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",
-    //     dangerouslyAllowBrowser: true,
+    //     apiKey: process.env.NEXT_PUBLIC_OPENAI_API
+    //       dangerouslyAllowBrowser: true,
     //   });
     //   const response = await client.responses.create({
     //     model: "gpt-4.1",
