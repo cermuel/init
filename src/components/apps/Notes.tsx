@@ -1,23 +1,65 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { nanoid } from "nanoid";
 import { useTheme } from "next-themes";
 import { BsPencilSquare, BsTrash3 } from "react-icons/bs";
+import { ContextType, FileType } from "@/types/context";
+import { useFiles } from "@/hooks/useFile";
+import { FaSave } from "react-icons/fa";
+import Save from "../controls/Save";
 
-type Note = {
+export type Note = {
   id: string;
   title: string;
   content: string;
   updated: number;
 };
 
-export default function NotesApp() {
+export default function NotesApp({ currentNote }: { currentNote?: FileType }) {
   const { theme } = useTheme();
   const [notes, setNotes] = useState<Note[]>([]);
-  const [activeNoteId, setActiveNoteId] = useState<string | null>(null);
+  const [activeNoteId, setActiveNoteId] = useState<string | null>(
+    currentNote && currentNote.id ? currentNote.id.toString() : null
+  );
+  const [showSaveModal, setShowSaveModal] = useState(false);
 
-  // Sync notes to localStorage
+  useLayoutEffect(() => {
+    if (currentNote) {
+      setNotes((prevNotes) => {
+        const existingIndex = prevNotes.findIndex(
+          (note) =>
+            note.id == currentNote?.id ||
+            (note.title === currentNote?.content?.title &&
+              note.content === currentNote?.content?.content)
+        );
+
+        if (existingIndex !== -1) {
+          const updatedNotes = [...prevNotes];
+          updatedNotes[existingIndex] = {
+            title: currentNote?.content?.title,
+            id: currentNote?.id?.toString(),
+            updated: Date.now(),
+            content: currentNote?.content.content,
+          };
+          return updatedNotes;
+        }
+
+        return [
+          {
+            title: currentNote?.content?.title,
+            id: currentNote?.id?.toString(),
+            updated: Date.now(),
+            content: currentNote?.content.content,
+          },
+          ...prevNotes,
+        ];
+      });
+
+      setActiveNoteId(currentNote.id);
+    }
+  }, [currentNote]);
+
   useEffect(() => {
     localStorage.setItem("notes", JSON.stringify(notes));
   }, [notes]);
@@ -53,15 +95,14 @@ export default function NotesApp() {
     }
   };
 
-  // Load notes on mount
-  //   useEffect(() => {
-  //     const stored = localStorage.getItem("notes");
-  //     if (stored) {
-  //       const parsed: Note[] = JSON.parse(stored);
-  //       setNotes(parsed);
-  //       if (parsed.length) setActiveNoteId(parsed[0].id);
-  //     }
-  //   }, [notes]);
+  // useEffect(() => {
+  //   const stored = localStorage.getItem("notes");
+  //   if (stored) {
+  //     const parsed: Note[] = JSON.parse(stored);
+  //     setNotes(parsed);
+  //     if (parsed.length) setActiveNoteId(parsed[0].id);
+  //   }
+  // }, [notes]);
 
   return (
     <div
@@ -69,6 +110,17 @@ export default function NotesApp() {
         theme == "dark" ? "bg-[#1b1d1f]" : "bg-[#efefef]"
       }`}
     >
+      {showSaveModal && activeNote && (
+        <Save
+          cancel={setShowSaveModal}
+          currentFile={currentNote}
+          fileToSave={{
+            id: activeNote.id.toString(),
+            filetype: "notes",
+            content: activeNote,
+          }}
+        />
+      )}
       {/* Sidebar */}
       <div
         className={`w-64 flex flex-col  border-t ${
@@ -132,11 +184,17 @@ export default function NotesApp() {
       >
         {activeNote ? (
           <>
-            <input
-              className="text-lg font-bold pb-1 focus:outline-none"
-              value={activeNote.title}
-              onChange={(e) => updateNote({ title: e.target.value })}
-            />
+            <div className="w-full flex items-center gap-2">
+              <input
+                className="text-lg font-bold pb-1 focus:outline-none flex-1"
+                value={activeNote.title}
+                onChange={(e) => updateNote({ title: e.target.value })}
+              />
+              <FaSave
+                className="cursor-pointer"
+                onClick={() => setShowSaveModal(true)}
+              />
+            </div>
             <textarea
               className="flex-1 text-sm focus:outline-none resize-none"
               value={activeNote.content}

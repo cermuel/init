@@ -9,10 +9,8 @@ import { BsFullscreen, BsFullscreenExit } from "react-icons/bs";
 import { FaRegUserCircle } from "react-icons/fa";
 import Image from "next/image";
 import { useApps } from "@/hooks/useApp";
-import NotesApp from "@/components/apps/Notes";
-import { ContextType } from "@/types/context";
-import { DockIcons } from "@/utils/dock.items";
-import { DockIconType } from "@/types/dock";
+import NotesApp, { Note } from "@/components/apps/Notes";
+import { ContextType, FileType } from "@/types/context";
 import AppWindow from "@/components/layout/AppWindow";
 import LoadingScreen from "@/components/ui/LoadingScreen";
 import DesktopIcons from "@/components/ui/DesktopIcons";
@@ -22,6 +20,10 @@ import MusicApp from "@/components/apps/Music";
 import TerminalApp from "@/components/apps/Terminal";
 import { useDesktop } from "@/hooks/useDesktop";
 import WidgetManager from "@/components/widgets/WidgetManager";
+import Dock from "@/components/ui/Dock";
+import Finder from "@/components/apps/Finder";
+import { nanoid } from "nanoid";
+import TriggerAssistant from "@/components/extras/TriggerAssistant";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -42,6 +44,16 @@ export default function Home() {
     focusedApp,
   } = useApps();
   const { customBg } = useDesktop();
+  const [currentNoteFile, setcurrentNoteFile] = useState<FileType>();
+  const [currentCodeFile, setCurrentCodeFile] = useState<FileType>();
+
+  const onOpenFile = (file: FileType) => {
+    if (file?.filetype == "notes") {
+      setcurrentNoteFile(file);
+    } else if (file?.filetype == "code") {
+      setCurrentCodeFile(file);
+    }
+  };
 
   const handleDockApps = (app: ContextType["AppName"]) => {
     if (!openedApps[app]) {
@@ -97,7 +109,8 @@ export default function Home() {
     : "/images/bg/light.jpg";
   return (
     <>
-      <LoadingScreen />
+      {/* <LoadingScreen /> */}
+
       <div className="flex w-screen h-screen justify-center lg:hidden bg-black text-white">
         <h1 className="font-medium text-xl text-center">
           Please open on a larger screen
@@ -132,6 +145,7 @@ export default function Home() {
           }`}
         >
           <div></div>
+
           <ul className="flex gap-4 items-center h-full">
             <li
               onClick={() =>
@@ -150,6 +164,7 @@ export default function Home() {
             <li>
               <FaRegUserCircle size={14} />
             </li>
+            <TriggerAssistant />
             <li>{helpers.getFormattedDate()}</li>
           </ul>
         </nav>
@@ -165,7 +180,7 @@ export default function Home() {
                 isMaximized={isMaximized}
                 setIsMaximized={setIsMaximized}
               >
-                <NotesApp />
+                <NotesApp currentNote={currentNoteFile} />
               </AppWindow>
             )}
 
@@ -176,7 +191,7 @@ export default function Home() {
                 isMaximized={isMaximized}
                 setIsMaximized={setIsMaximized}
               >
-                <CodeEditorApp />
+                <CodeEditorApp currentCode={currentCodeFile} />
               </AppWindow>
             )}
 
@@ -212,100 +227,39 @@ export default function Home() {
                 <MusicApp />
               </AppWindow>
             )}
+
+            {openedApps.finder && !minimizedApps.finder && (
+              <AppWindow
+                appName="finder"
+                title="Finder"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <Finder
+                  onOpenFile={onOpenFile}
+                  handleDockApps={handleDockApps}
+                />
+              </AppWindow>
+            )}
+
+            {openedApps.bin && !minimizedApps.finder && (
+              <AppWindow
+                appName="finder"
+                title="Finder"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <Finder
+                  onOpenFile={onOpenFile}
+                  handleDockApps={handleDockApps}
+                  isTrash={true}
+                />
+              </AppWindow>
+            )}
           </>
         </div>
         <div className="fixed bottom-0 flex w-full z-90 justify-center">
-          <div
-            className={`w-auto z-100 py-4 translate-y-0 ${
-              isMaximized && "translate-y-20 hover:translate-y-0"
-            } duration-300 transition-all ease-in`}
-          >
-            <ul
-              className={`flex h-full items-center gap-2 rounded-md p-1 transition-all duration-300 ${
-                theme == "dark" ? "bg-black/30 " : "bg-white/30 "
-              }`}
-            >
-              {DockIcons.slice(0, 1).map(
-                (icon: DockIconType, index: number) => (
-                  <div className="flex flex-col items-center" key={index}>
-                    <Image
-                      src={icon.image}
-                      alt={icon.alt}
-                      width={100}
-                      height={100}
-                      onClick={() => icon.name && handleDockApps(icon.name)}
-                      className="w-12 hover:scale-150 transition-all duration-300"
-                    />
-                    {focusedApp == icon.name && (
-                      <div
-                        className={`w-1 h-1 rounded-full ${
-                          theme == "dark" ? "bg-white/60" : "bg-black/60"
-                        }`}
-                      ></div>
-                    )}
-                  </div>
-                )
-              )}
-              <div className="h-full py-1">
-                <div
-                  className={`h-full w-[1px] ${
-                    theme == "dark" ? "bg-white/20" : "bg-black/20"
-                  }`}
-                ></div>
-              </div>
-              {DockIcons.slice(1, 7).map(
-                (icon: DockIconType, index: number) => (
-                  <div className="flex flex-col items-center" key={index}>
-                    <Image
-                      src={icon.image}
-                      alt={icon.alt}
-                      width={100}
-                      height={100}
-                      onClick={() => icon.name && handleDockApps(icon.name)}
-                      className={`${
-                        icon.name == "code" ? "w-10" : "w-12"
-                      } hover:scale-150 transition-all duration-300`}
-                    />
-                    {focusedApp == icon.name && (
-                      <div
-                        className={`w-1 h-1 rounded-full ${
-                          theme == "dark" ? "bg-white/60" : "bg-black/60"
-                        }`}
-                      ></div>
-                    )}
-                  </div>
-                )
-              )}
-
-              <div className="h-full py-1">
-                <div
-                  className={`h-full w-[1px] ${
-                    theme == "dark" ? "bg-white/20" : "bg-black/20"
-                  }`}
-                ></div>
-              </div>
-              {DockIcons.slice(7).map((icon: DockIconType, index: number) => (
-                <div className="flex flex-col items-center" key={index}>
-                  <Image
-                    src={icon.image}
-                    alt={icon.alt}
-                    width={100}
-                    height={100}
-                    onClick={() => icon.name && handleDockApps(icon.name)}
-                    className={`
-                  w-12 hover:scale-150 transition-all duration-300`}
-                  />
-                  {focusedApp == icon.name && (
-                    <div
-                      className={`w-1 h-1 rounded-full ${
-                        theme == "dark" ? "bg-white/60" : "bg-black/60"
-                      }`}
-                    ></div>
-                  )}
-                </div>
-              ))}
-            </ul>
-          </div>
+          <Dock isMaximized={isMaximized} handleDockApps={handleDockApps} />
         </div>
       </div>
     </>

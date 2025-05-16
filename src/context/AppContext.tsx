@@ -19,6 +19,8 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     safari: false,
     code: false,
     terminal: false,
+    finder: false,
+    bin: false,
   });
 
   const [minimizedApps, setMinimizedApps] = useState<
@@ -30,6 +32,8 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     safari: false,
     code: false,
     terminal: false,
+    finder: false,
+    bin: false,
   });
 
   const [focusedApp, setFocusedApp] = useState<ContextType["AppName"] | null>(

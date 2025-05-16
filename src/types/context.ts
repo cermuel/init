@@ -1,7 +1,15 @@
 import { Dispatch } from "react";
 import { DesktopIconType, WidgetIconType, WidgetType } from "./desktop";
 
-type AppName = "notes" | "music" | "photos" | "safari" | "code" | "terminal";
+type AppName =
+  | "notes"
+  | "music"
+  | "photos"
+  | "safari"
+  | "code"
+  | "terminal"
+  | "finder"
+  | "bin";
 
 type AppsState = {
   openedApps: Record<AppName, boolean>;
@@ -41,8 +49,23 @@ type DesktopContextType = {
   removeWidget: (Widget: WidgetIconType) => void;
 };
 
+type FileContent = {
+  title: string;
+  content: string;
+  id?: number | string;
+  language?: string;
+};
+
+export type FileType = {
+  id: string;
+  filetype: AppName;
+  content: FileContent;
+};
+
 export type ContextType = {
   AppName: AppName;
   AppsState: AppsState;
   DesktopContext: DesktopContextType;
+  FileContent: FileContent;
+  File: FileType;
 };

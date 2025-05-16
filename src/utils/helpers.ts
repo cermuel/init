@@ -1,3 +1,4 @@
+import { CodeFileType } from "@/components/apps/Code";
 import { DesktopIconType } from "@/types/desktop";
 import { Dispatch } from "react";
 const GRID_SIZE = 80;
@@ -135,10 +136,25 @@ const resolveCollision = (
   return { x, y };
 };
 
+// Utility functions
+const FILES_KEY = "code-editor-files";
+
+function saveFilesToStorage(files: CodeFileType[]) {
+  localStorage.setItem(FILES_KEY, JSON.stringify(files));
+}
+
+function loadFilesFromStorage(): CodeFileType[] {
+  if (typeof window === "undefined") return [];
+  const data = localStorage.getItem(FILES_KEY);
+  return data ? JSON.parse(data) : [];
+}
+
 export const helpers = {
   getFormattedDate,
   goFullscreen,
   generateNewIconPosition,
   handleSaveStickyNote,
   resolveCollision,
+  saveFilesToStorage,
+  loadFilesFromStorage,
 };

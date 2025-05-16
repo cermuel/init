@@ -5,6 +5,8 @@ import { ThemeProvider } from "next-themes";
 import { AppsProvider } from "@/context/AppContext";
 import Head from "next/head";
 import { DesktopProvider } from "@/context/DesktopContext";
+import { FilesProvider } from "@/context/FileContext";
+import TriggerAssistant from "@/components/extras/TriggerAssistant";
 
 export const metadata = {
   title: "Init",
@@ -33,7 +35,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </Head>
         <ThemeProvider attribute="class">
           <DesktopProvider>
-            <AppsProvider>{children}</AppsProvider>
+            <FilesProvider>
+              <AppsProvider>{children}</AppsProvider>
+            </FilesProvider>
           </DesktopProvider>
         </ThemeProvider>
       </body>

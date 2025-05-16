@@ -1,32 +1,42 @@
 "use client";
 
 import { useApps } from "@/hooks/useApp";
+import { FileType } from "@/types/context";
 import { DesktopIconType } from "@/types/desktop";
 import { helpers } from "@/utils/helpers";
 import Editor from "@monaco-editor/react";
 
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useLayoutEffect, useState } from "react";
 import { IoChevronDownOutline, IoCloseSharp } from "react-icons/io5";
+import Save from "../controls/Save";
+import { FaSave } from "react-icons/fa";
 
-type FileType = {
+export type CodeFileType = {
   id: string;
   name: string;
   language: string;
   content: string;
 };
 
-export default function CodeEditorApp() {
+export default function CodeEditorApp({
+  currentCode,
+}: {
+  currentCode?: FileType;
+}) {
   const { theme } = useTheme();
   const { icons, setIcons } = useApps();
 
-  const [files, setFiles] = useState<FileType[]>([]);
-  const [activeFileId, setActiveFileId] = useState<string | null>(null);
+  const [files, setFiles] = useState<CodeFileType[]>([]);
+  const [activeFileId, setActiveFileId] = useState<string | null>(
+    currentCode && currentCode.id ? currentCode.id.toString() : null
+  );
   const [showCreateFile, setShowCreateFile] = useState(false);
   const [query, setQuery] = useState("");
   const [fileName, setFileName] = useState("");
   const [editingFileId, setEditingFileId] = useState<string | null>(null);
   const [newFileName, setNewFileName] = useState("");
+  const [showSaveModal, setshowSaveModal] = useState(false);
 
   const fileTypes = ["javascript", "html", "css", "java", "python"];
 
@@ -34,8 +44,44 @@ export default function CodeEditorApp() {
     file.toLowerCase().includes(query.toLowerCase())
   );
 
+  useLayoutEffect(() => {
+    if (currentCode && currentCode?.content?.language) {
+      setFiles((prevFiles) => {
+        const existingIndex = prevFiles.findIndex(
+          (code) =>
+            code.id === currentCode?.id ||
+            (code.name === currentCode?.content?.title &&
+              code.content === currentCode?.content?.content)
+        );
+
+        if (existingIndex !== -1 && currentCode?.content?.language) {
+          const updatedFiles = [...prevFiles];
+          updatedFiles[existingIndex] = {
+            name: currentCode?.content?.title,
+            id: currentCode?.id?.toString(),
+            language: currentCode?.content?.language ?? "",
+            content: currentCode?.content.content,
+          };
+          return updatedFiles;
+        }
+
+        return [
+          {
+            name: currentCode?.content?.title,
+            id: currentCode?.id?.toString(),
+            language: currentCode?.content?.language ?? "",
+            content: currentCode?.content.content,
+          },
+          ...prevFiles,
+        ];
+      });
+
+      setActiveFileId(currentCode.id);
+    }
+  }, [currentCode]);
+
   const createFile = (language: string) => {
-    const newFile: FileType = {
+    const newFile: CodeFileType = {
       id: `${Date.now()}`,
       name:
         fileName ||
@@ -91,7 +137,22 @@ export default function CodeEditorApp() {
         backgroundColor: theme === "dark" ? "#1e1e1e" : "#ffffff",
       }}
     >
-      {/* Create File Modal */}
+      {showSaveModal && activeFile && (
+        <Save
+          cancel={setshowSaveModal}
+          currentFile={currentCode}
+          fileToSave={{
+            id: activeFile.id.toString(),
+            filetype: "code",
+            content: {
+              id: activeFile.id,
+              title: activeFile.name,
+              content: activeFile.content,
+              language: activeFile.language,
+            },
+          }}
+        />
+      )}
       {showCreateFile && (
         <div className="w-full absolute top-0 left-0 flex justify-center z-50">
           <div
@@ -219,6 +280,12 @@ export default function CodeEditorApp() {
           {activeFile && (
             <div className="text-xs font-medium">{activeFile.name}</div>
           )}
+          <button
+            className="ml-auto px-4 cursor-pointer"
+            onClick={() => setshowSaveModal(true)}
+          >
+            <FaSave />
+          </button>
         </div>
 
         {/* Monaco Editor */}

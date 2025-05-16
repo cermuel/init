@@ -119,7 +119,10 @@ export default function AppWindow({
                   </button>
                   <button
                     className="p-[1px] cursor-pointer flex items-center justify-center bg-[#FF5F57] rounded-full"
-                    onClick={() => closeApp(appName)}
+                    onClick={() => {
+                      closeApp(appName);
+                      setIsMaximized(false);
+                    }}
                   >
                     <IoCloseSharp size={10} />
                   </button>
