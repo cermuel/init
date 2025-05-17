@@ -2,8 +2,12 @@
 "use client";
 import { ContextType } from "@/types/context";
 import { DesktopIconType } from "@/types/desktop";
-import { getInitialIcons } from "@/utils/desktop.items";
-import { createContext, Dispatch, useState } from "react";
+import {
+  getCustomApps,
+  getInitialIcons,
+  getPublishedApps,
+} from "@/utils/desktop.items";
+import { createContext, Dispatch, useEffect, useState } from "react";
 
 export const AppsContext = createContext<ContextType["AppsState"] | undefined>(
   undefined
@@ -21,6 +25,9 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     terminal: false,
     finder: false,
     bin: false,
+    dev: false,
+    applauncher: false,
+    store: false,
   });
 
   const [minimizedApps, setMinimizedApps] = useState<
@@ -34,15 +41,39 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     terminal: false,
     finder: false,
     bin: false,
+    dev: false,
+    applauncher: false,
+    store: false,
   });
 
   const [focusedApp, setFocusedApp] = useState<ContextType["AppName"] | null>(
     null
   );
 
-  const [icons, setIcons] = useState<DesktopIconType[]>(() =>
-    getInitialIcons()
+  const [selectedCustom, setSelectedCustom] = useState<
+    ContextType["CustomApp"] | null
+  >(null);
+  const [myApps, setMyApps] = useState<ContextType["CustomApp"][]>(() =>
+    getCustomApps()
   );
+  const [icons, setIcons] = useState<DesktopIconType[]>(() =>
+    getInitialIcons(myApps)
+  );
+  const [publishedApps, setPublishedApps] = useState<
+    ContextType["CustomApp"][]
+  >(() => getPublishedApps());
+
+  useEffect(() => {
+    if (publishedApps) {
+      localStorage.setItem("publishedApps", JSON.stringify(publishedApps));
+    }
+  }, [publishedApps]);
+  useEffect(() => {
+    if (myApps) {
+      localStorage.setItem("customApps", JSON.stringify(myApps));
+    }
+    setIcons(getInitialIcons(myApps));
+  }, [myApps]);
 
   const toggleApp = (app: ContextType["AppName"]) => {
     setOpenedApps((prev) => ({
@@ -78,6 +109,15 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
       setFocusedApp(app);
     }
   };
+  const downloadApp = (app: ContextType["CustomApp"]) => {
+    if (app) {
+      const hasApp = myApps.filter((myApp) => myApp.id == app.id).length > 0;
+      if (hasApp) return "App already downloaded";
+      setMyApps([...myApps, app]);
+      return "App downloaded successfully";
+    }
+    return "App not found";
+  };
 
   const sortIcons = (
     order: "asc" | "desc",
@@ -108,6 +148,7 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
 
     setIcons(updated);
   };
+
   return (
     <AppsContext.Provider
       value={{
@@ -122,6 +163,13 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
         minimizeApp,
         restoreApp,
         focusApp,
+        selectedCustom,
+        setSelectedCustom,
+        myApps,
+        setMyApps,
+        publishedApps,
+        setPublishedApps,
+        downloadApp,
       }}
     >
       {children}

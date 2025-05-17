@@ -9,7 +9,35 @@ type AppName =
   | "code"
   | "terminal"
   | "finder"
-  | "bin";
+  | "bin"
+  | "dev"
+  | "applauncher"
+  | "store";
+
+type AppCategory =
+  | "Productivity"
+  | "Utilities"
+  | "Entertainment"
+  | "Education"
+  | "Social"
+  | "Lifestyle"
+  | "Finance"
+  | "Design & Media"
+  | "News & Weather"
+  | "Other";
+
+type CustomApp = {
+  id: string;
+  name: string;
+  icon: string;
+  type: "custom";
+  html: string;
+  css: string;
+  js: string;
+  category: AppCategory;
+  description: string;
+  owner?: string;
+};
 
 type AppsState = {
   openedApps: Record<AppName, boolean>;
@@ -23,6 +51,13 @@ type AppsState = {
   sortBy: (order: "asc" | "desc", setIcons: Dispatch<any>, icons: any) => void;
   icons: any;
   setIcons: any;
+  selectedCustom: CustomApp | null;
+  setSelectedCustom: Dispatch<CustomApp | null>;
+  publishedApps: CustomApp[];
+  setPublishedApps: Dispatch<CustomApp[]>;
+  myApps: CustomApp[];
+  setMyApps: Dispatch<CustomApp[]>;
+  downloadApp: (app: CustomApp) => string;
 };
 
 type DesktopContextType = {
@@ -64,8 +99,10 @@ export type FileType = {
 
 export type ContextType = {
   AppName: AppName;
+  AppCategory: AppCategory;
   AppsState: AppsState;
   DesktopContext: DesktopContextType;
   FileContent: FileContent;
   File: FileType;
+  CustomApp: CustomApp;
 };

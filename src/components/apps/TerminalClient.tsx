@@ -67,6 +67,9 @@ export default function TerminalClient() {
       "terminal",
       "safari",
       "music",
+      "bin",
+      "dev",
+      "finder",
     ];
 
     switch (command) {

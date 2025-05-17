@@ -22,8 +22,9 @@ import { useDesktop } from "@/hooks/useDesktop";
 import WidgetManager from "@/components/widgets/WidgetManager";
 import Dock from "@/components/ui/Dock";
 import Finder from "@/components/apps/Finder";
-import { nanoid } from "nanoid";
 import TriggerAssistant from "@/components/extras/TriggerAssistant";
+import AppLauncher from "@/components/layout/AppLauncher";
+import InitStore from "@/components/apps/Store";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -42,16 +43,20 @@ export default function Home() {
     restoreApp,
     focusApp,
     focusedApp,
+    selectedCustom,
   } = useApps();
   const { customBg } = useDesktop();
   const [currentNoteFile, setcurrentNoteFile] = useState<FileType>();
   const [currentCodeFile, setCurrentCodeFile] = useState<FileType>();
+  const [currentSafariFile, setCurrentSafariFile] = useState<FileType>();
 
   const onOpenFile = (file: FileType) => {
     if (file?.filetype == "notes") {
       setcurrentNoteFile(file);
     } else if (file?.filetype == "code") {
       setCurrentCodeFile(file);
+    } else if (file?.filetype == "safari") {
+      setCurrentSafariFile(file);
     }
   };
 
@@ -202,7 +207,7 @@ export default function Home() {
                 isMaximized={isMaximized}
                 setIsMaximized={setIsMaximized}
               >
-                <BrowserApp />
+                <BrowserApp url={currentSafariFile} />
               </AppWindow>
             )}
 
@@ -242,10 +247,21 @@ export default function Home() {
               </AppWindow>
             )}
 
-            {openedApps.bin && !minimizedApps.finder && (
+            {openedApps.store && !minimizedApps.store && (
               <AppWindow
-                appName="finder"
-                title="Finder"
+                appName="store"
+                title="Init Store"
+                isMaximized={isMaximized}
+                setIsMaximized={setIsMaximized}
+              >
+                <InitStore />
+              </AppWindow>
+            )}
+
+            {openedApps.bin && !minimizedApps.bin && (
+              <AppWindow
+                appName="bin"
+                title="Bin"
                 isMaximized={isMaximized}
                 setIsMaximized={setIsMaximized}
               >
@@ -256,6 +272,15 @@ export default function Home() {
                 />
               </AppWindow>
             )}
+            {openedApps.applauncher &&
+              !minimizedApps.applauncher &&
+              selectedCustom && (
+                <AppLauncher
+                  isMaximized={isMaximized}
+                  setIsMaximized={setIsMaximized}
+                  app={selectedCustom}
+                />
+              )}
           </>
         </div>
         <div className="fixed bottom-0 flex w-full z-90 justify-center">

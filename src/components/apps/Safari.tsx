@@ -1,9 +1,10 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { X } from "lucide-react";
 import Image from "next/image";
+import { FileType } from "@/types/context";
 
 const defaultTabs = [{ id: 1, title: "Start Page", url: "", isHome: true }];
 
@@ -25,10 +26,10 @@ const favorites = [
   },
 ];
 
-export default function BrowserApp() {
+export default function BrowserApp({ url }: { url?: FileType }) {
   const [tabs, setTabs] = useState(defaultTabs);
   const [activeTabId, setActiveTabId] = useState(1);
-  const [newUrl, setNewUrl] = useState("");
+  const [newUrl, setNewUrl] = useState(url?.content?.content || "");
   const { theme } = useTheme();
 
   const openNewTab = (url = "") => {
@@ -58,6 +59,10 @@ export default function BrowserApp() {
       )
     );
   };
+
+  useEffect(() => {
+    url && updateTabUrl(Date.now(), url?.content?.content);
+  }, [url]);
 
   const activeTab = tabs.find((tab) => tab.id === activeTabId);
 

@@ -7,12 +7,12 @@ import { useApps } from "@/hooks/useApp";
 import { ContextType } from "@/types/context";
 import { DesktopIconType, WidgetIconType } from "@/types/desktop";
 import { useDesktop } from "@/hooks/useDesktop";
-import BatteryWidget from "../widgets/BatteryWidget";
 import StickyNotesWidget from "../widgets/StickyNotesWidget";
 import { helpers } from "@/utils/helpers";
+import { getCustomApps } from "@/utils/desktop.items";
 
 export default function DesktopIcons() {
-  const { toggleApp, icons, setIcons } = useApps();
+  const { toggleApp, icons, setIcons, setSelectedCustom } = useApps();
   const { showIcons, widgets, setWidgets } = useDesktop();
 
   const openApp = (app: ContextType["AppName"]) => {
@@ -47,6 +47,8 @@ export default function DesktopIcons() {
     setWidgets(newWidgets);
   };
 
+  const customApps = getCustomApps();
+
   return (
     <>
       {/* Sorting Buttons */}
@@ -67,7 +69,17 @@ export default function DesktopIcons() {
             onDragStop={(_, data) => handleDragStop(index, data.x, data.y)}
           >
             <div
-              onDoubleClick={() => openApp(icon.name)}
+              onDoubleClick={() => {
+                if (icon.isCustomApp) {
+                  let iCustom = customApps?.filter(
+                    (app: ContextType["CustomApp"]) => app.id == icon.name
+                  );
+                  iCustom.length > 0 && setSelectedCustom(iCustom[0]);
+                  openApp("applauncher");
+                } else {
+                  openApp(icon.name);
+                }
+              }}
               draggable="false"
               className="flex flex-col items-center justify-center w-full h-full cursor-pointer group"
             >

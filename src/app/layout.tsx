@@ -7,6 +7,7 @@ import Head from "next/head";
 import { DesktopProvider } from "@/context/DesktopContext";
 import { FilesProvider } from "@/context/FileContext";
 import TriggerAssistant from "@/components/extras/TriggerAssistant";
+import ToastProvider from "@/context/ToastContext";
 
 export const metadata = {
   title: "Init",
@@ -36,7 +37,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         <ThemeProvider attribute="class">
           <DesktopProvider>
             <FilesProvider>
-              <AppsProvider>{children}</AppsProvider>
+              <AppsProvider>
+                <ToastProvider>{children}</ToastProvider>
+              </AppsProvider>
             </FilesProvider>
           </DesktopProvider>
         </ThemeProvider>

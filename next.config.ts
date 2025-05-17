@@ -16,8 +16,10 @@ const nextConfig: NextConfig = {
     domains: [
       "mosaic.scdn.co",
       "i.scdn.co",
+      "purepng.com",
       "thisis-images.scdn.co",
       "image-cdn-ak.spotifycdn.com",
+      "res.cloudinary.com",
     ], // 👈 Add this line
   },
   eslint: {
