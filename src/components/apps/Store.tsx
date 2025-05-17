@@ -15,10 +15,11 @@ import DevCenter from "../controls/DevCenter";
 import Button from "../ui/shared/button";
 import { useApps } from "@/hooks/useApp";
 import { useToast } from "@/hooks/useToast";
+import StoreApp from "../ui/store/store-app";
 
 const InitStore = () => {
   const { publishedApps: apps, myApps, downloadApp } = useApps();
-  const { showToast } = useToast();
+
   const { theme } = useTheme();
   const [query, setQuery] = useState("");
   const [search, setSearch] = useState(false);
@@ -116,66 +117,9 @@ const InitStore = () => {
               {selectedCategory == "" ? "Discover" : selectedCategory}
             </h1>
             <div className="grid-cols-2 grid my-4 gap-10">
-              {filteredApps?.map((app, idx: number) => {
-                const hasApp =
-                  myApps.filter((myApp) => myApp.id == app.id).length > 0;
-                return (
-                  <div
-                    key={idx}
-                    className="col-span-1 justify-between flex border-b-[0.1px] py-3 border-gray-500"
-                  >
-                    <div className="flex items-center gap-2">
-                      <Image
-                        src={app.icon}
-                        alt={app.name}
-                        width={100}
-                        height={100}
-                        className="rounded-sm w-12 h-12"
-                      />
-                      <div className="flex flex-col gap-1.5">
-                        <h2 className="font-semibold text-sm">{app.name}</h2>
-                        <p className="text-[13px] text-gray-500">
-                          {app.name}, {app.type}
-                        </p>
-                      </div>
-                    </div>
-                    {loading ? (
-                      <AiOutlineLoading3Quarters
-                        className="animate-spin"
-                        color="#737cde"
-                        size={20}
-                      />
-                    ) : (
-                      <button
-                        className="duration-200 transition-all"
-                        onClick={() => {
-                          setLoading(true);
-                          setTimeout(() => {
-                            let downloadString = downloadApp(app);
-                            showToast(
-                              downloadString,
-                              downloadString == "App downloaded successfully"
-                                ? "success"
-                                : "warning"
-                            );
-                            setLoading(false);
-                          }, 2000);
-                        }}
-                      >
-                        {hasApp ? (
-                          <IoCheckmarkCircleOutline color="#737cde" size={20} />
-                        ) : (
-                          <IoCloudDownloadOutline
-                            color="#737cde"
-                            size={20}
-                            className="cursor-pointer"
-                          />
-                        )}
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
+              {filteredApps?.map((app, idx: number) => (
+                <StoreApp app={app} key={idx} />
+              ))}
             </div>
           </div>
         )}

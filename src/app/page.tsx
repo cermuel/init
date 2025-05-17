@@ -116,7 +116,12 @@ export default function Home() {
     <>
       {/* <LoadingScreen /> */}
 
-      <div className="flex w-screen h-screen justify-center lg:hidden bg-black text-white">
+      <div
+        className="flex w-screen h-screen justify-center lg:hidden bg-black text-white"
+        onContextMenu={(e) => {
+          e.stopPropagation();
+        }}
+      >
         <h1 className="font-medium text-xl text-center">
           Please open on a larger screen
         </h1>

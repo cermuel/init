@@ -1,0 +1,95 @@
+"use client";
+
+import { useApps } from "@/hooks/useApp";
+import { useTheme } from "next-themes";
+import React, { Dispatch, useEffect, useState } from "react";
+import { MdOutlineKeyboardArrowRight } from "react-icons/md";
+import { FaCaretLeft } from "react-icons/fa6";
+import { useDesktop } from "@/hooks/useDesktop";
+
+const AppMenu = ({
+  top,
+  left,
+  onOpen,
+  onUninstall,
+}: {
+  top: number;
+  left: number;
+  onOpen: () => void;
+  onUninstall: () => void;
+}) => {
+  const { theme } = useTheme();
+
+  const bg = theme === "dark" ? "bg-[#121212]" : "bg-[#F6F6F6]";
+  const text = theme === "dark" ? "text-[#F6F6F6]" : "text-[#121212]";
+  const divider = theme === "dark" ? "bg-white/10" : "bg-black/10";
+
+  return (
+    <ul
+      className={`w-[220px] z-500 absolute ${bg} ${text} cursor-default rounded-[5px] p-[4px] gap-1 flex-col flex`}
+      style={{ top, left }}
+    >
+      <li
+        onClick={onOpen}
+        className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+      >
+        Open
+      </li>
+      <div className="w-full px-2">
+        <div className={`w-full h-[1px] ${divider}`}></div>
+      </div>
+
+      <li
+        onClick={onUninstall}
+        className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+      >
+        Uninstall App
+      </li>
+      <div className="w-full px-2">
+        <div className={`w-full h-[1px] ${divider}`}></div>
+      </div>
+      <li className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white">
+        Refresh
+      </li>
+      <li className="w-full h-[22px] px-5 text-xs items-center flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white">
+        Get Info
+      </li>
+
+      {/* <li
+        className="w-full h-[22px] px-5 text-xs items-center relative flex hover:bg-[#0A82FF] hover:rounded-[5px] hover:text-white"
+        onMouseEnter={() => setHoveredItem("sortBy")}
+        onMouseLeave={() => setHoveredItem(null)}
+      >
+        <p className="flex justify-between items-center w-full">
+          Sort By <MdOutlineKeyboardArrowRight size={18} />
+        </p>
+        {hoveredItem === "sortBy" && (
+          <ul
+            className={`absolute top-0 left-full ml-2.5 w-[180px] ${bg} ${text} p-1.5 gap-1 flex-col flex rounded-[5px] z-50`}
+          >
+            <FaCaretLeft
+              size={18}
+              className={`absolute -left-[9px] top-1 ${
+                theme === "dark" ? "text-[#121212]" : "text-[#F6F6F6]"
+              }`}
+            />
+            <li
+              onClick={() => sortBy("asc", setIcons, icons)}
+              className="px-4 py-1 text-xs hover:bg-[#0A82FF] hover:text-white rounded"
+            >
+              Ascending
+            </li>
+            <li
+              onClick={() => sortBy("desc", setIcons, icons)}
+              className="px-4 py-1 text-xs hover:bg-[#0A82FF] hover:text-white rounded"
+            >
+              Descending
+            </li>
+          </ul>
+        )}
+      </li> */}
+    </ul>
+  );
+};
+
+export default AppMenu;

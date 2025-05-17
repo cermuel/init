@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Rnd } from "react-rnd";
 import { useApps } from "@/hooks/useApp";
 import { ContextType } from "@/types/context";
@@ -10,15 +10,22 @@ import { useDesktop } from "@/hooks/useDesktop";
 import StickyNotesWidget from "../widgets/StickyNotesWidget";
 import { helpers } from "@/utils/helpers";
 import { getCustomApps } from "@/utils/desktop.items";
+import AppMenu from "./AppMenu";
+import InitAlert from "../controls/Alert";
+import { useToast } from "@/hooks/useToast";
 
 export default function DesktopIcons() {
-  const { toggleApp, icons, setIcons, setSelectedCustom } = useApps();
+  const { toggleApp, icons, setIcons, setSelectedCustom, myApps, setMyApps } =
+    useApps();
   const { showIcons, widgets, setWidgets } = useDesktop();
+  const { showToast } = useToast();
 
   const openApp = (app: ContextType["AppName"]) => {
     toggleApp(app);
   };
+  const [selectedIcon, setSelectedIcon] = useState<any>();
 
+  const [showAlert, setShowAlert] = useState(false);
   const handleDragStop = (index: number, x: number, y: number) => {
     const newIcons = [...icons];
     const { x: newX, y: newY } = helpers.resolveCollision(
@@ -49,15 +56,70 @@ export default function DesktopIcons() {
 
   const customApps = getCustomApps();
 
+  const [appMenu, setAppMenu] = useState<{
+    x: number;
+    y: number;
+    visible: boolean;
+    icon: any;
+  }>({ x: 0, y: 0, visible: false, icon: null });
+
+  useEffect(() => {
+    const hideMenu = () => setAppMenu((prev) => ({ ...prev, visible: false }));
+    window.addEventListener("click", hideMenu);
+    return () => window.removeEventListener("click", hideMenu);
+  }, []);
+
   return (
     <>
-      {/* Sorting Buttons */}
-
       <div
         className={`inset-0 absolute z-10 transition-all duration-500 ${
           showIcons ? "opacity-100" : "opacity-0"
         }`}
       >
+        {showAlert && selectedIcon && (
+          <InitAlert
+            ok={() => {
+              if (!selectedIcon?.isCustomApp)
+                return showToast("You can't uninstall a system app", "warning");
+              let installed = myApps?.filter(
+                (app) => app.id !== selectedIcon.name
+              );
+              setTimeout(() => {
+                showToast(
+                  `${selectedIcon?.label} uninstalled successfully`,
+                  "success"
+                );
+              }, 1000);
+              setTimeout(() => {
+                setMyApps(installed);
+                setSelectedIcon(null);
+                setShowAlert(false);
+              }, 1500);
+            }}
+            cancel={setShowAlert}
+            title={`Are you sure you want to uninstall "${selectedIcon?.label}"?`}
+            icon={selectedIcon.image}
+            text="This app will be uninstalled immediately. You can't undo this action"
+          />
+        )}
+        {appMenu.visible && appMenu.icon !== null && (
+          <AppMenu
+            onOpen={() => {
+              if (appMenu.icon.isCustomApp) {
+                let iCustom = customApps?.filter(
+                  (app: ContextType["CustomApp"]) => app.id == appMenu.icon.name
+                );
+                iCustom.length > 0 && setSelectedCustom(iCustom[0]);
+                openApp("applauncher");
+              } else {
+                openApp(appMenu.icon.name);
+              }
+            }}
+            onUninstall={() => setShowAlert(true)}
+            top={appMenu.y}
+            left={appMenu.x}
+          />
+        )}
         {icons.map((icon: any, index: number) => (
           <Rnd
             key={icon.name}
@@ -79,6 +141,12 @@ export default function DesktopIcons() {
                 } else {
                   openApp(icon.name);
                 }
+              }}
+              onContextMenu={(e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                setAppMenu({ x: e.clientX, y: e.clientY, visible: true, icon });
+                setSelectedIcon(icon);
               }}
               draggable="false"
               className="flex flex-col items-center justify-center w-full h-full cursor-pointer group"
@@ -126,13 +194,6 @@ export default function DesktopIcons() {
                 widget.widget()
               ) : null}
             </div>
-            {/* <div
-            onDoubleClick={() => openApp(icon.name)}
-            draggable="false"
-            className="flex flex-col items-center justify-center w-full h-full cursor-pointer group"
-          >
-      
-          </div> */}
           </Rnd>
         ))}
       </div>
