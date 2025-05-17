@@ -138,7 +138,7 @@ export const APP_CATEGORIES: {
   },
 ];
 
-const defaultPublishedAPPs = [
+const defaultPublishedAPPs: ContextType["CustomApp"][] = [
   {
     id: "boZXNYK6JR",
     name: "Jokes App",
