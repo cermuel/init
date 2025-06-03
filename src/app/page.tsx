@@ -114,7 +114,7 @@ export default function Home() {
     : "/images/bg/light.jpg";
   return (
     <>
-      {/* <LoadingScreen /> */}
+  <LoadingScreen />
 
       <div
         className="flex w-screen h-screen justify-center lg:hidden bg-black text-white"
