@@ -51,7 +51,7 @@ export default function MusicApp() {
 
   const handleLogin = () => {
     const CLIENT_ID = "cd0028742e934e208e089105c84c97cc";
-    const REDIRECT_URI = `${window.location.origin}/callback`; // your redirect URI
+    const REDIRECT_URI = `${window.location.origin}/callback`;
     const scopes = [
       "user-read-playback-state",
       "user-modify-playback-state",
@@ -81,12 +81,12 @@ export default function MusicApp() {
 
   const togglePlay = (track: any) => {
     if (playingTrack?.id === track.id) {
-      setPlayingTrack(null); // Stop if same track clicked
+      setPlayingTrack(null);
     } else {
-      setPlayingTrack(track); // Play new track
+      setPlayingTrack(track);
     }
   };
-
+  console.log({ tracks });
   return (
     <div className="p-6 min-h-screen bg-[#121212] text-white">
       {!token ? (

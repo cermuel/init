@@ -16,6 +16,7 @@ export const DesktopProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const [auth, openAuth] = useState<boolean>(false);
   const [customBg, setCustomBg] = useState<string | null>(null);
   const [showIcons, setShowIcons] = useState(true);
   const [widgets, setWidgets] = useState<WidgetIconType[]>(() =>
@@ -94,6 +95,8 @@ export const DesktopProvider = ({
   return (
     <DesktopContext.Provider
       value={{
+        auth,
+        openAuth,
         addWidget,
         removeWidget,
         showWidgetManager,

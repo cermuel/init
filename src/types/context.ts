@@ -31,9 +31,10 @@ type CustomApp = {
   name: string;
   icon: string;
   type: "custom";
-  html: string;
-  css: string;
-  js: string;
+  html?: string;
+  css?: string;
+  js?: string;
+  fw?: string;
   category: AppCategory;
   description: string;
   owner?: string;
@@ -82,6 +83,8 @@ type DesktopContextType = {
     index: number;
   }) => void;
   removeWidget: (Widget: WidgetIconType) => void;
+  auth: boolean;
+  openAuth: Dispatch<boolean>;
 };
 
 type FileContent = {
@@ -96,6 +99,12 @@ export type FileType = {
   filetype: AppName;
   content: FileContent;
 };
+
+export enum AppType {
+  plain = "Plain",
+  react = "React Js",
+  next = "Next Js",
+}
 
 export type ContextType = {
   AppName: AppName;

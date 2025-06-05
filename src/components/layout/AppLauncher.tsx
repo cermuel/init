@@ -126,19 +126,20 @@ export default function AppLauncher({
               </div>
               <div className="flex-1 overflow-auto">
                 <iframe
-                  srcDoc={`
-    <html>
-      <head>
-        <style>${app.css}</style>
-      </head>
-      <body>
-        ${app.html}
-        <script>${app.js}</script>
-      </body>
-    </html>
-  `}
+                  //                 srcDoc={`
+                  //   <html>
+                  //     <head>
+                  //       <style>${app.css}</style>
+                  //     </head>
+                  //     <body>
+                  //       ${app.html}
+                  //       <script>${app.js}</script>
+                  //     </body>
+                  //   </html>
+                  // `}
                   sandbox="allow-scripts allow-same-origin"
                   style={{ width: "100%", height: "100%" }}
+                  src="http://localhost:4000/uploads/cermuel/Init/out/index.html"
                 />
               </div>
             </div>

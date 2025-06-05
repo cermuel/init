@@ -1,4 +1,3 @@
-// app/layout.tsx or layout.js
 import { ReactNode } from "react";
 import "./globals.css";
 import { ThemeProvider } from "next-themes";
@@ -8,6 +7,7 @@ import { DesktopProvider } from "@/context/DesktopContext";
 import { FilesProvider } from "@/context/FileContext";
 import TriggerAssistant from "@/components/extras/TriggerAssistant";
 import ToastProvider from "@/context/ToastContext";
+import ReduxProvider from "@/providers/ReduxProvider";
 
 export const metadata = {
   title: "Init",
@@ -34,11 +34,14 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             type="image/svg+xml"
           />
         </Head>
+
         <ThemeProvider attribute="class">
           <DesktopProvider>
             <FilesProvider>
               <AppsProvider>
-                <ToastProvider>{children}</ToastProvider>
+                <ToastProvider>
+                  <ReduxProvider>{children}</ReduxProvider>
+                </ToastProvider>
               </AppsProvider>
             </FilesProvider>
           </DesktopProvider>

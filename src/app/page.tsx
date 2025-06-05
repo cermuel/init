@@ -25,6 +25,9 @@ import Finder from "@/components/apps/Finder";
 import TriggerAssistant from "@/components/extras/TriggerAssistant";
 import AppLauncher from "@/components/layout/AppLauncher";
 import InitStore from "@/components/apps/Store";
+import Auth from "@/components/controls/Auth";
+import { useSelector } from "react-redux";
+import { UserState } from "@/types/auth";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -45,7 +48,8 @@ export default function Home() {
     focusedApp,
     selectedCustom,
   } = useApps();
-  const { customBg } = useDesktop();
+  const { customBg, auth, openAuth } = useDesktop();
+  const user = useSelector((state: { user: UserState }) => state.user);
   const [currentNoteFile, setcurrentNoteFile] = useState<FileType>();
   const [currentCodeFile, setCurrentCodeFile] = useState<FileType>();
   const [currentSafariFile, setCurrentSafariFile] = useState<FileType>();
@@ -62,11 +66,11 @@ export default function Home() {
 
   const handleDockApps = (app: ContextType["AppName"]) => {
     if (!openedApps[app]) {
-      toggleApp(app); // open fresh
+      toggleApp(app);
     } else if (minimizedApps[app]) {
-      restoreApp(app); // bring back
+      restoreApp(app);
     } else {
-      focusApp(app); // bring to front
+      focusApp(app);
     }
   };
 
@@ -79,7 +83,6 @@ export default function Home() {
     const handleClick = (e: MouseEvent) => {
       const target = e.target as HTMLElement;
 
-      // Prevent closing the context menu if clicking on the file input or label
       if (target.closest("label")?.textContent?.includes("Change Wallpaper")) {
         return;
       }
@@ -96,7 +99,6 @@ export default function Home() {
     };
   }, []);
 
-  // Prevent hydration mismatch
   useEffect(() => setMounted(true), []);
 
   if (!mounted) return null;
@@ -112,22 +114,24 @@ export default function Home() {
     : theme === "dark"
     ? "/images/bg/dark.svg"
     : "/images/bg/light.jpg";
+
   return (
     <>
-  <LoadingScreen />
+      <LoadingScreen />
+      {auth && <Auth />}
 
       <div
-        className="flex w-screen h-screen justify-center lg:hidden bg-black text-white"
+        className="flex justify-center w-screen h-screen text-white bg-black lg:hidden"
         onContextMenu={(e) => {
           e.stopPropagation();
         }}
       >
-        <h1 className="font-medium text-xl text-center">
+        <h1 className="text-xl font-medium text-center">
           Please open on a larger screen
         </h1>
       </div>
       <div
-        className="h-screen max-lg:hidden w-full relative bg-cover flex flex-col transition-all duration-300"
+        className="relative flex flex-col w-full h-screen transition-all duration-300 bg-cover max-lg:hidden"
         style={{ backgroundImage: customBg == null ? bgImage : "" }}
       >
         {customBg !== null && (
@@ -137,7 +141,7 @@ export default function Home() {
             height={10000}
             priority
             alt=""
-            className="w-screen h-screen object-cover fixed top-0 left-0"
+            className="fixed top-0 left-0 object-cover w-screen h-screen"
           />
         )}
         {contextMenu.visible && (
@@ -156,7 +160,7 @@ export default function Home() {
         >
           <div></div>
 
-          <ul className="flex gap-4 items-center h-full">
+          <ul className="flex items-center h-full gap-4">
             <li
               onClick={() =>
                 helpers.goFullscreen({ isFullScreen, setIsFullScreen })
@@ -171,14 +175,25 @@ export default function Home() {
                 <MdDarkMode size={16} />
               )}
             </li>
-            <li>
-              <FaRegUserCircle size={14} />
+            <li onClick={() => openAuth(true)} className="cursor-pointer">
+              {user && user.avatar && user?.avatar.url !== "" ? (
+                <img
+                  src={user.avatar.url}
+                  alt={user.username}
+                  className="w-5 h-5 rounded-full"
+                  style={{
+                    backgroundColor: user.avatar.color,
+                  }}
+                />
+              ) : (
+                <FaRegUserCircle size={14} />
+              )}
             </li>
             <TriggerAssistant />
             <li>{helpers.getFormattedDate()}</li>
           </ul>
         </nav>
-        <div className="flex-1 relative">
+        <div className="relative flex-1">
           <>
             <WidgetManager />
             <DesktopIcons />
@@ -288,7 +303,7 @@ export default function Home() {
               )}
           </>
         </div>
-        <div className="fixed bottom-0 flex w-full z-90 justify-center">
+        <div className="fixed bottom-0 flex justify-center w-full z-90">
           <Dock isMaximized={isMaximized} handleDockApps={handleDockApps} />
         </div>
       </div>

@@ -143,11 +143,31 @@ function saveFilesToStorage(files: CodeFileType[]) {
   localStorage.setItem(FILES_KEY, JSON.stringify(files));
 }
 
-function loadFilesFromStorage(): CodeFileType[] {
+const loadFilesFromStorage = (): CodeFileType[] => {
   if (typeof window === "undefined") return [];
   const data = localStorage.getItem(FILES_KEY);
   return data ? JSON.parse(data) : [];
-}
+};
+
+const readFile = (
+  e: React.ChangeEvent<HTMLInputElement>,
+  type: "html" | "css" | "js",
+  setHtml: Dispatch<any>,
+  setCss: Dispatch<any>,
+  setJs: Dispatch<any>
+) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = (e) => {
+    const result = e.target?.result as string;
+    if (type === "html") setHtml(result);
+    if (type === "css") setCss(result);
+    if (type === "js") setJs(result);
+  };
+  reader.readAsText(file);
+};
 
 export const helpers = {
   getFormattedDate,
@@ -157,4 +177,5 @@ export const helpers = {
   resolveCollision,
   saveFilesToStorage,
   loadFilesFromStorage,
+  readFile,
 };

@@ -2,7 +2,7 @@
 import { useTheme } from "next-themes";
 import { Dispatch, useState } from "react";
 import Portal from "./Portal";
-import { ContextType } from "@/types/context";
+import { AppType, ContextType } from "@/types/context";
 import { APP_CATEGORIES } from "@/utils/desktop.items";
 import Button from "../ui/shared/button";
 import FileSelect from "../ui/shared/file-select";
@@ -11,18 +11,26 @@ import { nanoid } from "nanoid";
 import { useToast } from "@/hooks/useToast";
 import { uploadIconToCloudinary } from "@/api/icon-upload+api";
 import { useApps } from "@/hooks/useApp";
+import { helpers } from "@/utils/helpers";
+
+import JSZip from "jszip";
 
 interface DevCenterProps {
   cancel: Dispatch<boolean>;
 }
 const DevCenter = ({ cancel }: DevCenterProps) => {
+  const App_Types: AppType[] = [AppType.plain, AppType.react, AppType.next];
+
   const { showToast } = useToast();
   const { setPublishedApps, publishedApps } = useApps();
+  const { theme } = useTheme();
 
+  const [step, setStep] = useState(1);
   const [name, setName] = useState("");
   const [html, setHtml] = useState("");
   const [css, setCss] = useState("");
   const [js, setJs] = useState("");
+  const [fW, setfW] = useState<File | null>(null);
   const [icon, setIcon] = useState("");
   const [iconFile, setIconFile] = useState<File | null>(null);
   const [category, setCategory] = useState<ContextType["AppCategory"] | null>(
@@ -31,23 +39,7 @@ const DevCenter = ({ cancel }: DevCenterProps) => {
   const [description, setDescription] = useState("");
   const [percent, setPercent] = useState(0);
   const [loading, setLoading] = useState(false);
-
-  const readFile = (
-    e: React.ChangeEvent<HTMLInputElement>,
-    type: "html" | "css" | "js"
-  ) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-
-    const reader = new FileReader();
-    reader.onload = (e) => {
-      const result = e.target?.result as string;
-      if (type === "html") setHtml(result);
-      if (type === "css") setCss(result);
-      if (type === "js") setJs(result);
-    };
-    reader.readAsText(file);
-  };
+  const [selectedType, setSelectedType] = useState<AppType>(App_Types[0]);
 
   const handlePublish = async () => {
     if (!name) return showToast("App Name is required", "error");
@@ -95,8 +87,21 @@ const DevCenter = ({ cancel }: DevCenterProps) => {
     }, 2000);
   };
 
-  const { theme } = useTheme();
-  const [step, setStep] = useState(1);
+  const handleZip = async () => {
+    if (fW == null) return showToast("Zip file is required", "warning");
+    const zip = await JSZip.loadAsync(fW);
+    const files: Record<string, Blob> = {};
+
+    await Promise.all(
+      Object.entries(zip.files).map(async ([filename, fileData]) => {
+        if (!fileData.dir) {
+          const content = await fileData.async("blob");
+          files[filename] = content;
+        }
+      })
+    );
+  };
+
   return (
     <Portal>
       <div
@@ -179,7 +184,13 @@ const DevCenter = ({ cancel }: DevCenterProps) => {
                 label="Upload HTML File"
                 accept=".html"
                 onSelect={(file) =>
-                  readFile({ target: { files: [file] } } as any, "html")
+                  helpers.readFile(
+                    { target: { files: [file] } } as any,
+                    "html",
+                    setHtml,
+                    setCss,
+                    setJs
+                  )
                 }
               />
 
@@ -187,7 +198,13 @@ const DevCenter = ({ cancel }: DevCenterProps) => {
                 label="Upload CSS File"
                 accept=".css"
                 onSelect={(file) =>
-                  readFile({ target: { files: [file] } } as any, "css")
+                  helpers.readFile(
+                    { target: { files: [file] } } as any,
+                    "css",
+                    setHtml,
+                    setCss,
+                    setJs
+                  )
                 }
               />
 
@@ -195,7 +212,27 @@ const DevCenter = ({ cancel }: DevCenterProps) => {
                 label="Upload JS File"
                 accept=".js"
                 onSelect={(file) =>
-                  readFile({ target: { files: [file] } } as any, "js")
+                  helpers.readFile(
+                    { target: { files: [file] } } as any,
+                    "js",
+                    setHtml,
+                    setCss,
+                    setJs
+                  )
+                }
+              />
+
+              <FileSelect
+                label="Upload Zip File"
+                accept=".js"
+                onSelect={(file) =>
+                  helpers.readFile(
+                    { target: { files: [file] } } as any,
+                    "js",
+                    setHtml,
+                    setCss,
+                    setJs
+                  )
                 }
               />
             </div>
