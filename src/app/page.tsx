@@ -119,7 +119,6 @@ export default function Home() {
     <>
       <LoadingScreen />
       {auth && <Auth />}
-
       <div
         className="flex justify-center w-screen h-screen text-white bg-black lg:hidden"
         onContextMenu={(e) => {
