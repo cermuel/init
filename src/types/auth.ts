@@ -18,6 +18,7 @@ export interface Avatar {
 }
 
 export interface UserState {
+  id: string;
   username: string;
   avatar: Avatar;
 }

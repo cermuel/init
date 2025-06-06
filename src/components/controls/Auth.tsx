@@ -6,15 +6,20 @@ import AuthInput from "../ui/shared/auth-input";
 import { LoginDetails, UserState } from "@/types/auth";
 import { useToast } from "@/hooks/useToast";
 import { useDispatch, useSelector } from "react-redux";
-import { setUsername } from "@/services/slices/userSlice";
 import AvatarGenerator from "./Avatar";
 import User from "./User";
+import { addUser, switchUser } from "@/services/slices/userSlice";
+import { log } from "console";
+import { RootState } from "@/services/store";
+import { IoClose } from "react-icons/io5";
+import { useDesktop } from "@/hooks/useDesktop";
 
 const Auth = () => {
-  const dispatch = useDispatch();
-  const user = useSelector((state: { user: UserState }) => state.user);
+  const user = useSelector((state: RootState) => state.user.activeUser);
   const { theme } = useTheme();
   const { showToast } = useToast();
+  const { openAuth } = useDesktop();
+  const dispatch = useDispatch();
   const [loginDetails, setLoginDetails] = useState<LoginDetails>({
     username: "",
     password: "",
@@ -32,10 +37,26 @@ const Auth = () => {
   const login = () => {
     if (loginDetails.username.length > 0 && loginDetails.password.length > 0) {
       setIsLoading(true);
+      const id =
+        loginDetails.username + Math.random().toString(36).substring(2, 15);
+      dispatch(
+        addUser({
+          username: loginDetails.username,
+          id,
+
+          avatar: {
+            color: "#737cde",
+            seed: "",
+            style: "",
+            url: "",
+          },
+        })
+      );
       setTimeout(() => {
-        dispatch(setUsername(loginDetails.username));
+        dispatch(switchUser(id));
         setIsLoading(false);
         showToast(`Welcome ${loginDetails.username}`, "success");
+        setLoginSteps(3);
       }, 2000);
     }
   };
@@ -45,8 +66,11 @@ const Auth = () => {
         theme == "light" ? "bg-white text-black" : "bg-black/80 text-white"
       }`}
     >
-      {user.username ? (
-        <>{user.avatar?.url !== "" ? <User /> : <AvatarGenerator />}</>
+      <div className="absolute left-0 flex justify-end w-full px-4 cursor-pointer top-10">
+        <IoClose size={20} onClick={() => openAuth(false)} />
+      </div>
+      {loginSteps == 3 ? (
+        <AvatarGenerator />
       ) : (
         <>
           <div className="relative w-full h-[160px]">

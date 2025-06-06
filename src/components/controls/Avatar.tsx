@@ -7,12 +7,8 @@ import { createAvatar } from "@dicebear/core";
 import { seeds, stylesMap } from "@/utils/auth.items";
 import Button from "../ui/shared/button";
 import { useDispatch } from "react-redux";
-import {
-  setAvatarColor,
-  setAvatarSeed,
-  setAvatarStyle,
-  setAvatarUrl,
-} from "@/services/slices/userSlice";
+import { updateAvatar } from "@/services/slices/userSlice";
+import { useDesktop } from "@/hooks/useDesktop";
 
 const formatStyleName = (name: string) => {
   return name
@@ -23,6 +19,7 @@ const formatStyleName = (name: string) => {
 
 const AvatarGenerator = () => {
   const { theme } = useTheme();
+  const { openAuth } = useDesktop();
   const dispatch = useDispatch();
   const [avatarStyle, changeAvatarStyle] =
     useState<keyof typeof stylesMap>("notionists");
@@ -33,6 +30,7 @@ const AvatarGenerator = () => {
   const [showSeedDropdown, setShowSeedDropdown] = useState(false);
   const styleDropdownRef = useRef<HTMLDivElement>(null);
   const seedDropdownRef = useRef<HTMLDivElement>(null);
+  const [loading, setLoading] = useState<boolean>(false);
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -66,10 +64,19 @@ const AvatarGenerator = () => {
   };
 
   const save = () => {
-    dispatch(setAvatarColor(color));
-    dispatch(setAvatarUrl(svgUri));
-    dispatch(setAvatarStyle(avatarStyle));
-    dispatch(setAvatarSeed(seed));
+    setLoading(true);
+    setTimeout(() => {
+      dispatch(
+        updateAvatar({
+          seed,
+          style: avatarStyle,
+          url: svgUri,
+          color,
+        })
+      );
+      setLoading(false);
+      openAuth(false);
+    }, 2000);
   };
 
   return (
@@ -240,6 +247,7 @@ const AvatarGenerator = () => {
           variant="primary"
           onClick={save}
           className="flex-1 px-4 py-[9px] rounded-md"
+          loading={loading}
         >
           Save
         </Button>

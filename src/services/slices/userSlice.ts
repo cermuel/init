@@ -1,77 +1,72 @@
-import { UserState } from "@/types/auth";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { UserState } from "@/types/auth";
 
-const initialState: UserState = {
-  username: "",
-  avatar: {
-    seed: "Felix",
-    style: "adventurer",
-    url: "",
-    color: "#737cde",
-  },
+interface MultiUserState {
+  activeUser: UserState | null;
+  allUsers: UserState[];
+}
+
+const initialState: MultiUserState = {
+  activeUser: null,
+  allUsers: [],
 };
 
 const userSlice = createSlice({
   name: "user",
   initialState,
   reducers: {
-    getUser: (state) => {
-      return state;
+    addUser: (state, action: PayloadAction<UserState>) => {
+      const exists = state.allUsers.find((u) => u.id === action.payload.id);
+      if (!exists) {
+        state.allUsers.push(action.payload);
+      }
+      state.activeUser = action.payload;
     },
-    setUsername: (state, action: PayloadAction<string>) => {
-      state.username = action.payload;
+    switchUser: (state, action: PayloadAction<string>) => {
+      const found = state.allUsers.find((u) => u.id === action.payload);
+      if (found) state.activeUser = found;
     },
-    setAvatarSeed: (state, action: PayloadAction<string>) => {
-      state.avatar.seed = action.payload;
+    removeUser: (state, action: PayloadAction<string>) => {
+      state.allUsers = state.allUsers.filter((u) => u.id !== action.payload);
+      if (state.activeUser?.id === action.payload) {
+        state.activeUser = state.allUsers[0] || null;
+      }
     },
-    setAvatarStyle: (state, action: PayloadAction<string>) => {
-      state.avatar.style = action.payload;
+    updateAvatar: (
+      state,
+      action: PayloadAction<Partial<UserState["avatar"]>>
+    ) => {
+      if (!state.activeUser) return;
+      state.activeUser.avatar = {
+        ...state.activeUser.avatar,
+        ...action.payload,
+      };
+      state.allUsers = state.allUsers.map((user) =>
+        user.id === state.activeUser!.id
+          ? { ...user, avatar: state.activeUser!.avatar }
+          : user
+      );
     },
-    setAvatarColor: (state, action: PayloadAction<string>) => {
-      state.avatar.color = action.payload;
+    updateUsername: (state, action: PayloadAction<string>) => {
+      if (state.activeUser) {
+        state.activeUser.username = action.payload;
+      }
     },
-    setAvatarUrl: (state, action: PayloadAction<string>) => {
-      state.avatar.url = action.payload;
+    logoutUser: (state) => {
+      state.activeUser = null;
     },
-    randomizeSeed: (state) => {
-      const seeds = [
-        "Felix",
-        "Luna",
-        "Max",
-        "Oliver",
-        "Mia",
-        "Nova",
-        "Zane",
-        "Kai",
-        "Leo",
-        "Ivy",
-        "Juno",
-        "Ezra",
-        "Aria",
-        "Finn",
-        "Niko",
-        "Skye",
-        "Sage",
-        "Remy",
-        "Wren",
-        "Theo",
-      ];
-      const randomIndex = Math.floor(Math.random() * seeds.length);
-      state.avatar.seed = seeds[randomIndex];
-    },
-    resetUser: () => initialState,
+    resetAll: () => initialState,
   },
 });
 
 export const {
-  getUser,
-  setUsername,
-  setAvatarSeed,
-  setAvatarStyle,
-  randomizeSeed,
-  resetUser,
-  setAvatarColor,
-  setAvatarUrl,
+  addUser,
+  switchUser,
+  removeUser,
+  updateAvatar,
+  updateUsername,
+  logoutUser,
+  resetAll,
 } = userSlice.actions;
 
 export default userSlice.reducer;

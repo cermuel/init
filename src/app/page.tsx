@@ -28,6 +28,8 @@ import InitStore from "@/components/apps/Store";
 import Auth from "@/components/controls/Auth";
 import { useSelector } from "react-redux";
 import { UserState } from "@/types/auth";
+import { RootState } from "@/services/store";
+import User from "@/components/controls/User";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -49,10 +51,12 @@ export default function Home() {
     selectedCustom,
   } = useApps();
   const { customBg, auth, openAuth } = useDesktop();
-  const user = useSelector((state: { user: UserState }) => state.user);
+  const user = useSelector((state: RootState) => state.user.activeUser);
+  const userList = useSelector((state: RootState) => state.user.allUsers);
   const [currentNoteFile, setcurrentNoteFile] = useState<FileType>();
   const [currentCodeFile, setCurrentCodeFile] = useState<FileType>();
   const [currentSafariFile, setCurrentSafariFile] = useState<FileType>();
+  const [openUser, setOpenUser] = useState<boolean>(false);
 
   const onOpenFile = (file: FileType) => {
     if (file?.filetype == "notes") {
@@ -115,10 +119,19 @@ export default function Home() {
     ? "/images/bg/dark.svg"
     : "/images/bg/light.jpg";
 
+  const handleOpen = () => {
+    if (userList.length === 0) {
+      openAuth(true);
+    } else {
+      setOpenUser(true);
+    }
+  };
   return (
     <>
-      <LoadingScreen />
+      {/* <LoadingScreen /> */}
+
       {auth && <Auth />}
+      {openUser && <User setOpenUser={setOpenUser} />}
       <div
         className="flex justify-center w-screen h-screen text-white bg-black lg:hidden"
         onContextMenu={(e) => {
@@ -174,7 +187,7 @@ export default function Home() {
                 <MdDarkMode size={16} />
               )}
             </li>
-            <li onClick={() => openAuth(true)} className="cursor-pointer">
+            <li onClick={handleOpen} className="cursor-pointer">
               {user && user.avatar && user?.avatar.url !== "" ? (
                 <img
                   src={user.avatar.url}
