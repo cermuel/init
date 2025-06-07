@@ -30,6 +30,7 @@ import { useSelector } from "react-redux";
 import { UserState } from "@/types/auth";
 import { RootState } from "@/services/store";
 import User from "@/components/controls/User";
+import Logo from "@/components/ui/Logo";
 
 export default function Home() {
   const { theme, setTheme } = useTheme();
@@ -170,7 +171,10 @@ export default function Home() {
               : "bg-white/50 text-black/80"
           }`}
         >
-          <div></div>
+          <div className="flex items-center">
+            <Logo size={16} className="mr-2" />
+            <span className="font-medium">Init</span>
+          </div>
 
           <ul className="flex items-center h-full gap-4">
             <li

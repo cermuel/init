@@ -8,11 +8,14 @@ import { FilesProvider } from "@/context/FileContext";
 import TriggerAssistant from "@/components/extras/TriggerAssistant";
 import ToastProvider from "@/context/ToastContext";
 import ReduxProvider from "@/providers/ReduxProvider";
+import { Metadata } from "next";
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Init",
+  description: "Your personal workspace",
   icons: {
-    icon: "/initsmallround.png",
+    icon: "/favicon.svg",
+    apple: "/favicon.svg",
   },
 };
 

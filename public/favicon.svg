@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Main Circle -->
+  <circle cx="16" cy="16" r="16" fill="#0A0A0A"/>
+  
+  <!-- Apple Shape -->
+  <path d="M16 6C16 6 24 11 24 16C24 21 16 26 16 26C16 26 8 21 8 16C8 11 16 6 16 6Z" fill="#737cde"/>
+  
+  <!-- Bite -->
+  <path d="M16 11C16 11 21 13.5 21 16C21 18.5 16 21 16 21C16 21 11 18.5 11 16C11 13.5 16 11 16 11Z" fill="#0A0A0A"/>
+  
+  <!-- Stem -->
+  <path d="M16 6L16 4" stroke="#737cde" stroke-width="2" stroke-linecap="round"/>
+</svg> 
