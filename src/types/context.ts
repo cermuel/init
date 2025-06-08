@@ -26,7 +26,7 @@ type AppCategory =
   | "News & Weather"
   | "Other";
 
-type CustomApp = {
+export type CustomApp = {
   id: string;
   name: string;
   icon: string;
@@ -34,10 +34,15 @@ type CustomApp = {
   html?: string;
   css?: string;
   js?: string;
-  fw?: string;
-  category: AppCategory;
+  framework?: {
+    type: AppType;
+    packageJson?: string;
+    buildConfig?: string;
+    sourceFiles?: Record<string, string>;
+  };
+  owner: string;
   description: string;
-  owner?: string;
+  category: AppCategory;
 };
 
 type AppsState = {

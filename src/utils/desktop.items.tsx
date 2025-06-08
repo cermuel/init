@@ -169,7 +169,7 @@ export function getPublishedApps() {
   const custom: ContextType["CustomApp"][] = JSON.parse(
     localStorage.getItem("publishedApps") || "[]"
   );
-  return custom.length > 0 ? [...defaultPublishedAPPs] : [...custom];
+  return custom.length > 0 ? [...custom] : [...defaultPublishedAPPs];
 }
 export function getCustomApps() {
   if (typeof window === "undefined") return [];

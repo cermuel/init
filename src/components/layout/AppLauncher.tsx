@@ -8,13 +8,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import { IoCloseSharp } from "react-icons/io5";
 import { HiMiniMinusSmall } from "react-icons/hi2";
 import { FiMaximize2, FiMinimize2 } from "react-icons/fi";
-import { ContextType } from "@/types/context";
+import { ContextType, AppType } from "@/types/context";
 
-type Props = {
+interface Props {
   app: ContextType["CustomApp"];
   isMaximized: boolean;
-  setIsMaximized: Dispatch<boolean>;
-};
+  setIsMaximized: (value: boolean) => void;
+}
 
 export default function AppLauncher({
   app,
@@ -44,6 +44,80 @@ export default function AppLauncher({
     setIsMaximized(!isMaximized);
   };
 
+  const renderAppContent = () => {
+    if (app.framework) {
+      // For framework-based apps, we need to handle the build process
+      // This is a placeholder for the actual build process
+      return (
+        <div className="flex-1 overflow-auto">
+          <iframe
+            sandbox="allow-scripts allow-same-origin"
+            style={{ width: "100%", height: "100%" }}
+            srcDoc={`
+              <html>
+                <head>
+                  <script>
+                    // Framework-specific initialization
+                    ${
+                      app.framework.type === AppType.react
+                        ? `
+                      // React initialization
+                      const root = document.getElementById('root');
+                      const app = React.createElement(App);
+                      ReactDOM.render(app, root);
+                    `
+                        : app.framework.type === AppType.next
+                        ? `
+                      // Next.js initialization
+                      // This would typically be handled by the Next.js runtime
+                    `
+                        : ""
+                    }
+                  </script>
+                </head>
+                <body>
+                  <div id="root"></div>
+                  <script>
+                    // Load framework source files
+                    ${Object.entries(app.framework.sourceFiles || {})
+                      .map(
+                        ([filename, content]) => `
+                      // ${filename}
+                      ${content}
+                    `
+                      )
+                      .join("\n")}
+                  </script>
+                </body>
+              </html>
+            `}
+          />
+        </div>
+      );
+    } else {
+      // For plain HTML/CSS/JS apps
+      return (
+        <div className="flex-1 overflow-auto">
+          <iframe
+            sandbox="allow-scripts allow-same-origin"
+            style={{ width: "100%", height: "100%" }}
+            srcDoc={`
+              <html>
+                <head>
+                  <style>${app.css || ""}</style>
+                </head>
+                <body>
+                  ${app.html || ""}
+                  <script>${app.js || ""}</script>
+                </body>
+              </html>
+            `}
+          />
+        </div>
+      );
+    }
+  };
+
   return (
     <AnimatePresence>
       {!isMinimized && (
@@ -68,80 +142,36 @@ export default function AppLauncher({
               ${isFocused ? "z-50" : "z-40"}
             `}
           >
-            <div className="flex flex-col h-full">
+            <div
+              className={`w-full h-full flex flex-col ${
+                theme === "dark" ? "bg-[#1e1e1e]" : "bg-white"
+              }`}
+            >
               <div
-                className={`app-header ${
-                  isMaximized ? "rounded-none" : "rounded-t-xl"
-                } flex items-center justify-between ${
-                  theme === "dark" ? "bg-[#181E25]" : "bg-[#efefef]"
-                } px-4 py-2 cursor-move select-none`}
+                className={`app-header h-8 flex items-center justify-between px-4 ${
+                  theme === "dark" ? "bg-[#2d2d2d]" : "bg-gray-100"
+                }`}
               >
-                {focusedApp && (
-                  <Image
-                    src={app?.icon ?? `/icons/custom-app.png`}
-                    alt={focusedApp}
-                    width={100}
-                    height={100}
-                    className="w-5"
-                  />
-                )}
-                <span
-                  className={`font-medium capitalize text-sm ${
-                    theme === "dark" ? "text-white/90" : "text-black/90"
-                  }`}
-                >
-                  {app.name}
-                </span>
-                <div
-                  className={`space-x-2 z-50 pl-4 h-full flex items-center ${
-                    theme == "dark" ? "text-white" : "text-black"
-                  }`}
-                >
+                <div className="flex items-center gap-2">
+                  <img src={app.icon} alt={app.name} className="w-4 h-4" />
+                  <span className="text-sm font-medium">{app.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
                   <button
-                    className="p-[3px] cursor-pointer flex items-center justify-center bg-[#28C840] rounded-full"
-                    onClick={toggleMaximize}
-                  >
-                    {isMaximized ? (
-                      <FiMinimize2 size={6} />
-                    ) : (
-                      <FiMaximize2 size={6} />
-                    )}
-                  </button>
-                  <button
-                    className="p-[0.5px] cursor-pointer flex items-center justify-center bg-[#FEBC2E] rounded-full"
                     onClick={() => minimizeApp("applauncher")}
-                  >
-                    <HiMiniMinusSmall size={11} />
-                  </button>
+                    className="w-3 h-3 rounded-full bg-yellow-500"
+                  />
                   <button
-                    className="p-[1px] cursor-pointer flex items-center justify-center bg-[#FF5F57] rounded-full"
-                    onClick={() => {
-                      closeApp("applauncher");
-                      setIsMaximized(false);
-                    }}
-                  >
-                    <IoCloseSharp size={10} />
-                  </button>
+                    onClick={toggleMaximize}
+                    className="w-3 h-3 rounded-full bg-green-500"
+                  />
+                  <button
+                    onClick={() => closeApp("applauncher")}
+                    className="w-3 h-3 rounded-full bg-red-500"
+                  />
                 </div>
               </div>
-              <div className="flex-1 overflow-auto">
-                <iframe
-                  //                 srcDoc={`
-                  //   <html>
-                  //     <head>
-                  //       <style>${app.css}</style>
-                  //     </head>
-                  //     <body>
-                  //       ${app.html}
-                  //       <script>${app.js}</script>
-                  //     </body>
-                  //   </html>
-                  // `}
-                  sandbox="allow-scripts allow-same-origin"
-                  style={{ width: "100%", height: "100%" }}
-                  src="http://localhost:4000/uploads/cermuel/Init/out/index.html"
-                />
-              </div>
+              {renderAppContent()}
             </div>
           </Rnd>
         </motion.div>

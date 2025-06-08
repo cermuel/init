@@ -129,7 +129,7 @@ export default function Home() {
   };
   return (
     <>
-      {/* <LoadingScreen /> */}
+      <LoadingScreen />
 
       {auth && <Auth />}
       {openUser && <User setOpenUser={setOpenUser} />}
@@ -178,6 +178,7 @@ export default function Home() {
 
           <ul className="flex items-center h-full gap-4">
             <li
+              className="cursor-pointer"
               onClick={() =>
                 helpers.goFullscreen({ isFullScreen, setIsFullScreen })
               }
