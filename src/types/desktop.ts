@@ -2,7 +2,7 @@ import { ReactNode } from "react";
 import { ContextType } from "./context";
 
 export type DesktopIconType = {
-  name: ContextType["AppName"] | ContextType["CustomApp"]["id"]; // Accepts either a system or custom app ID
+  name: ContextType["AppName"] | ContextType["CustomApp"]["id"];
   label: string;
   image: string;
   x: number;
@@ -12,12 +12,12 @@ export type DesktopIconType = {
 };
 
 export type WidgetIconType = {
-  id: string; // Unique identifier for the widget
+  id: string;
   type: "Battery" | "Clock" | "StickyNotes" | "DigitalClock";
   x: number;
   y: number;
   content?: string;
-  widget: () => React.JSX.Element; // The widget component
+  widget: () => React.JSX.Element;
 };
 
 export type WidgetType = {

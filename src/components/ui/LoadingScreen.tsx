@@ -2,11 +2,24 @@
 import { useEffect, useState } from "react";
 import Logo from "./Logo";
 import { motion, useAnimation } from "framer-motion";
+import {
+  getProfile,
+  useGetProfileQuery,
+} from "@/services/slices/user/userApiSlice";
+import { useDispatch } from "react-redux";
+import { apiSlice } from "@/services/slices/apiSlice";
+import { AppDispatch } from "@/services/store";
 
 export default function LoadingScreen() {
   const [progress, setProgress] = useState(0);
   const [readyToHide, setReadyToHide] = useState(false);
   const [fullyHidden, setFullyHidden] = useState(false);
+  const dispatch = useDispatch<AppDispatch>();
+
+  useEffect(() => {
+    dispatch(apiSlice.util.invalidateTags(["User"]));
+    dispatch(getProfile.initiate());
+  }, []);
 
   useEffect(() => {
     let timeout: NodeJS.Timeout;

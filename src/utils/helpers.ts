@@ -136,7 +136,7 @@ const resolveCollision = (
   return { x, y };
 };
 
-// Utility functions
+
 const FILES_KEY = "code-editor-files";
 
 function saveFilesToStorage(files: CodeFileType[]) {
@@ -168,7 +168,10 @@ const readFile = (
   };
   reader.readAsText(file);
 };
-
+const isEmail = (input: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(input);
+};
 export const helpers = {
   getFormattedDate,
   goFullscreen,
@@ -178,4 +181,5 @@ export const helpers = {
   saveFilesToStorage,
   loadFilesFromStorage,
   readFile,
+  isEmail,
 };

@@ -6,17 +6,25 @@ import React from "react";
 
 interface RecentProps {
   handleClickOrDoubleClick: (file: FileType) => void;
+  searchQuery: string;
 }
 
-const Recents = ({ handleClickOrDoubleClick }: RecentProps) => {
+const Recents = ({ handleClickOrDoubleClick, searchQuery }: RecentProps) => {
   const { theme } = useTheme();
   const { files } = useFiles();
+
+  const filteredFiles = files.filter((file) =>
+    file.content.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
-      {files.length === 0 ? (
-        <p className="text-gray-500 text-sm">No files yet</p>
+      {filteredFiles.length === 0 ? (
+        <p className="text-gray-500 text-sm">
+          {searchQuery ? "No matching files found" : "No files yet"}
+        </p>
       ) : (
-        files.map((file) => (
+        filteredFiles.map((file) => (
           <div
             key={file.id}
             onClick={() => handleClickOrDoubleClick(file)}

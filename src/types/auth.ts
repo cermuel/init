@@ -1,13 +1,15 @@
 import { stylesMap } from "@/utils/auth.items";
 
 export interface LoginDetails {
-  username: string;
+  emailAddress?: string | undefined;
+  phoneNumber?: string | undefined;
+  username?: string | undefined;
   password: string;
 }
 export interface RegisterDetails {
-  username: string;
-  email: string;
-  password: string;
+  emailAddress: string;
+  firstName: string;
+  lastName: string;
 }
 
 export interface Avatar {
@@ -18,7 +20,19 @@ export interface Avatar {
 }
 
 export interface UserState {
-  id: string;
+  id?: string;
   username: string;
   avatar: Avatar;
+  emailAddress?: string;
+  phoneNumber?: string;
+  firstName?: string;
+  lastName?: string;
+  token?: string;
+}
+export interface ResetPasswordPayload {
+  emailAddress: string;
+  username?: string;
+  phoneNumber?: string;
+  otp: string;
+  password: string;
 }

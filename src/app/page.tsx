@@ -12,7 +12,6 @@ import { useApps } from "@/hooks/useApp";
 import NotesApp, { Note } from "@/components/apps/Notes";
 import { ContextType, FileType } from "@/types/context";
 import AppWindow from "@/components/layout/AppWindow";
-import LoadingScreen from "@/components/ui/LoadingScreen";
 import DesktopIcons from "@/components/ui/DesktopIcons";
 import CodeEditorApp from "@/components/apps/Code";
 import BrowserApp from "@/components/apps/Safari";
@@ -31,7 +30,11 @@ import { UserState } from "@/types/auth";
 import { RootState } from "@/services/store";
 import User from "@/components/controls/User";
 import Logo from "@/components/ui/Logo";
-
+import ControlCenter from "@/components/controls/ControlCenter";
+import Brightness from "@/components/ui/Brightness";
+import { LuLayoutPanelTop } from "react-icons/lu";
+import AIAgent from "@/components/ai/AIAgent";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -58,6 +61,7 @@ export default function Home() {
   const [currentCodeFile, setCurrentCodeFile] = useState<FileType>();
   const [currentSafariFile, setCurrentSafariFile] = useState<FileType>();
   const [openUser, setOpenUser] = useState<boolean>(false);
+  const [showCC, setShowCC] = useState<boolean>(false);
 
   const onOpenFile = (file: FileType) => {
     if (file?.filetype == "notes") {
@@ -127,17 +131,22 @@ export default function Home() {
       setOpenUser(true);
     }
   };
+
   return (
     <>
       <LoadingScreen />
-
+      <AIAgent />
+      <Brightness />
       {auth && <Auth />}
       {openUser && <User setOpenUser={setOpenUser} />}
+      {showCC && <ControlCenter />}
       <div
-        className="flex justify-center w-screen h-screen text-white bg-black lg:hidden"
+        className={`flex justify-center w-screen h-screen text-white bg-black lg:hidden `}
         onContextMenu={(e) => {
+          setShowCC(false);
           e.stopPropagation();
         }}
+        onClick={() => setShowCC(false)}
       >
         <h1 className="text-xl font-medium text-center">
           Please open on a larger screen
@@ -185,7 +194,10 @@ export default function Home() {
             >
               {isFullScreen ? <BsFullscreenExit size={13} /> : <BsFullscreen />}
             </li>
-            <li onClick={() => setTheme(theme == "dark" ? "light" : "dark")}>
+            <li
+              className="cursor-pointer"
+              onClick={() => setTheme(theme == "dark" ? "light" : "dark")}
+            >
               {theme == "dark" ? (
                 <MdLightMode size={16} />
               ) : (
@@ -205,6 +217,13 @@ export default function Home() {
               ) : (
                 <FaRegUserCircle size={14} />
               )}
+            </li>
+            <li>
+              <LuLayoutPanelTop
+                size={15}
+                className="cursor-pointer"
+                onClick={() => setShowCC(!showCC)}
+              />
             </li>
             <TriggerAssistant />
             <li>{helpers.getFormattedDate()}</li>

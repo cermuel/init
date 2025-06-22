@@ -9,6 +9,14 @@ import Button from "../ui/shared/button";
 import { useDispatch } from "react-redux";
 import { updateAvatar } from "@/services/slices/userSlice";
 import { useDesktop } from "@/hooks/useDesktop";
+import {
+  getProfile,
+  useUpdateProfileMutation,
+} from "@/services/slices/user/userApiSlice";
+import { ErrorType } from "@/types/api";
+import { useToast } from "@/hooks/useToast";
+import { apiSlice } from "@/services/slices/apiSlice";
+import { AppDispatch } from "@/services/store";
 
 const formatStyleName = (name: string) => {
   return name
@@ -20,7 +28,8 @@ const formatStyleName = (name: string) => {
 const AvatarGenerator = () => {
   const { theme } = useTheme();
   const { openAuth } = useDesktop();
-  const dispatch = useDispatch();
+  const { showToast } = useToast();
+  const dispatch = useDispatch<AppDispatch>();
   const [avatarStyle, changeAvatarStyle] =
     useState<keyof typeof stylesMap>("notionists");
   const [seed, setSeed] = useState<string>("Shady");
@@ -31,6 +40,8 @@ const AvatarGenerator = () => {
   const styleDropdownRef = useRef<HTMLDivElement>(null);
   const seedDropdownRef = useRef<HTMLDivElement>(null);
   const [loading, setLoading] = useState<boolean>(false);
+
+  const [updateProfile, { isLoading: updating }] = useUpdateProfileMutation();
 
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -63,25 +74,34 @@ const AvatarGenerator = () => {
     setSeed(randomSeed);
   };
 
-  const save = () => {
-    setLoading(true);
-    setTimeout(() => {
-      dispatch(
-        updateAvatar({
-          seed,
-          style: avatarStyle,
-          url: svgUri,
-          color,
-        })
+  const handleUpdateProfile = async () => {
+    await updateProfile({
+      avatar: {
+        Seed: seed,
+        Style: avatarStyle,
+        Color: color,
+        Url: svgUri,
+      },
+    })
+      .unwrap()
+      .then((res) => {
+        showToast("Avatar updated successfully!", "success");
+        dispatch(getProfile.initiate());
+        openAuth(false);
+      })
+      .catch((err: ErrorType) =>
+        showToast(
+          typeof err.data.message === "string"
+            ? err.data.message
+            : err.data.message[0] ?? "Error logging in!",
+          "error"
+        )
       );
-      setLoading(false);
-      openAuth(false);
-    }, 2000);
   };
 
   return (
     <div
-      className={`w-full h-full max-w-md flex flex-col items-center justify-center gap-6 p-10 transition-all duration-500 rounded-3xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-50 shadow-xl `}
+      className={`w-full  h-full max-w-md flex flex-col items-center justify-center gap-6 p-10 transition-all duration-500 rounded-3xl fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 z-[100] shadow-xl `}
     >
       <h2 className="text-2xl font-semibold">Generate Init Avatar</h2>
 
@@ -245,9 +265,9 @@ const AvatarGenerator = () => {
         </Button>
         <Button
           variant="primary"
-          onClick={save}
+          onClick={handleUpdateProfile}
           className="flex-1 px-4 py-[9px] rounded-md"
-          loading={loading}
+          loading={updating}
         >
           Save
         </Button>

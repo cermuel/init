@@ -19,6 +19,7 @@ export const DesktopProvider = ({
   const [auth, openAuth] = useState<boolean>(false);
   const [customBg, setCustomBg] = useState<string | null>(null);
   const [showIcons, setShowIcons] = useState(true);
+  const [brightness, setBrightness] = useState<number>(1);
   const [widgets, setWidgets] = useState<WidgetIconType[]>(() =>
     getInitialWidgets()
   );
@@ -30,7 +31,7 @@ export const DesktopProvider = ({
       type,
       x,
       y,
-      content, // Only save the necessary properties
+      content,
     }));
     localStorage.setItem("init_widgets", JSON.stringify(widgetsToSave));
   }, [widgets]);
@@ -96,6 +97,8 @@ export const DesktopProvider = ({
     <DesktopContext.Provider
       value={{
         auth,
+        brightness,
+        setBrightness,
         openAuth,
         addWidget,
         removeWidget,

@@ -2,7 +2,7 @@ import React, { ReactNode, useEffect, useRef, useState } from "react";
 // or wherever you export useFiles
 import { ContextType, FileType } from "@/types/context";
 import { useFiles } from "@/hooks/useFile";
-import { BsFileEarmarkCode } from "react-icons/bs";
+import { BsFileEarmarkCode, BsSearch } from "react-icons/bs";
 import { LuFileImage, LuFileTerminal, LuFileText } from "react-icons/lu";
 import Image from "next/image";
 import { useTheme } from "next-themes";
@@ -46,6 +46,7 @@ export default function Finder({
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [selectedControl, setSelectedControl] =
     useState<ControlType>("recents");
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     isTrash && setSelectedControl("trash");
@@ -152,18 +153,44 @@ export default function Finder({
           );
         })}
       </div>
-      <div
-        className={`flex flex-wrap flex-1 gap-10 justify-around items-start place-items-start overflow-scroll p-4 ${
-          theme == "dark" ? "bg-gray-700" : "bg-gray-100"
-        }`}
-      >
-        {selectedControl == "recents" ? (
-          <Recents handleClickOrDoubleClick={handleClickOrDoubleClick} />
-        ) : selectedControl == "trash" ? (
-          <Trash handleClick={(file) => setSelectedFile(file)} />
-        ) : (
-          <NotReady control={selectedControl} />
-        )}
+      <div className="flex flex-col flex-1">
+        <div
+          className={`p-4 ${theme == "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+        >
+          <div className={`relative mx-auto w-full`}>
+            <input
+              type="text"
+              placeholder="Search files..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className={`w-full pl-10 pr-4 py-2 text-xs font-medium rounded-sm ${
+                theme === "dark"
+                  ? "bg-gray-600 text-white placeholder-gray-400"
+                  : "bg-white text-gray-900 placeholder-gray-500"
+              } focus:outline-none focus:ring-[0.5px] focus:ring-blue-500`}
+            />
+            <BsSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+          </div>
+        </div>
+        <div
+          className={`flex flex-wrap flex-1 gap-10 justify-around items-start place-items-start overflow-scroll p-4 ${
+            theme == "dark" ? "bg-gray-700" : "bg-gray-100"
+          }`}
+        >
+          {selectedControl == "recents" ? (
+            <Recents
+              handleClickOrDoubleClick={handleClickOrDoubleClick}
+              searchQuery={searchQuery}
+            />
+          ) : selectedControl == "trash" ? (
+            <Trash
+              handleClick={(file) => setSelectedFile(file)}
+              searchQuery={searchQuery}
+            />
+          ) : (
+            <NotReady control={selectedControl} />
+          )}
+        </div>
       </div>
       {selectedFile && (
         <div

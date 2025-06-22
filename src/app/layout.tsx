@@ -9,6 +9,7 @@ import TriggerAssistant from "@/components/extras/TriggerAssistant";
 import ToastProvider from "@/context/ToastContext";
 import ReduxProvider from "@/providers/ReduxProvider";
 import { Metadata } from "next";
+import AIAgent from "@/components/ai/AIAgent";
 
 export const metadata: Metadata = {
   title: "Init",
@@ -21,7 +22,7 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html suppressHydrationWarning>
+    <html lang="en" suppressHydrationWarning>
       <body>
         <Head>
           <link
@@ -38,17 +39,20 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           />
         </Head>
 
-        <ThemeProvider attribute="class">
-          <DesktopProvider>
-            <FilesProvider>
-              <AppsProvider>
-                <ToastProvider>
-                  <ReduxProvider>{children}</ReduxProvider>
-                </ToastProvider>
-              </AppsProvider>
-            </FilesProvider>
-          </DesktopProvider>
-        </ThemeProvider>
+        <ReduxProvider>
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            <ToastProvider>
+              <DesktopProvider>
+                <FilesProvider>
+                  <AppsProvider>
+                    {children}
+                    <AIAgent />
+                  </AppsProvider>
+                </FilesProvider>
+              </DesktopProvider>
+            </ToastProvider>
+          </ThemeProvider>
+        </ReduxProvider>
       </body>
     </html>
   );

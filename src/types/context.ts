@@ -67,6 +67,8 @@ type AppsState = {
 };
 
 type DesktopContextType = {
+  brightness: number;
+  setBrightness: Dispatch<number>;
   customBg: string | null;
   setWallpaperFromFile: (file: File) => void;
   resetWallpaper: () => void;

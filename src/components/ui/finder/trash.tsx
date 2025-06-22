@@ -6,17 +6,25 @@ import React from "react";
 
 interface TrashProps {
   handleClick: (file: FileType) => void;
+  searchQuery: string;
 }
 
-const Trash = ({ handleClick }: TrashProps) => {
+const Trash = ({ handleClick, searchQuery }: TrashProps) => {
   const { theme } = useTheme();
   const { recycleBin } = useFiles();
+
+  const filteredFiles = recycleBin.filter((file) =>
+    file.content.title.toLowerCase().includes(searchQuery.toLowerCase())
+  );
+
   return (
     <>
-      {recycleBin.length === 0 ? (
-        <p className="text-gray-500 text-sm">Recycle bin is empty</p>
+      {filteredFiles.length === 0 ? (
+        <p className="text-gray-500 text-sm">
+          {searchQuery ? "No matching files found" : "Recycle bin is empty"}
+        </p>
       ) : (
-        recycleBin.map((file) => (
+        filteredFiles.map((file) => (
           <div
             key={file.id}
             onClick={() => handleClick(file)}
