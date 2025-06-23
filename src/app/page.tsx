@@ -124,7 +124,7 @@ export default function Home() {
     : "/images/bg/light.jpg";
 
   const handleOpen = () => {
-    if (userList.length === 0) {
+    if (userList.length === 0 || !user) {
       openAuth(true);
     } else {
       setOpenUser(true);
