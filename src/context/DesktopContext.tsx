@@ -1,7 +1,6 @@
 "use client";
 
 import { DelayedLoader } from "@/components/ui/DelayedLoader";
-import ScreenLoader from "@/components/ui/ScreenLoader";
 import { useToast } from "@/hooks/useToast";
 import { wallpaperDB } from "@/lib/wallpaper";
 import { selectActiveUser } from "@/services/selectors/userSelector";
@@ -11,12 +10,12 @@ import {
   useLazyGetDesktopQuery,
 } from "@/services/slices/desktop/desktopSlice";
 import { removeUser } from "@/services/slices/userSlice";
-import { ErrorType, FetchError } from "@/types/api";
+import { ErrorType } from "@/types/api";
 import { ContextType } from "@/types/context";
 import { DesktopIconType, WidgetIconType } from "@/types/desktop";
 import { getInitialWidgets } from "@/utils/desktop.items";
 import { helpers } from "@/utils/helpers";
-import React, { createContext, useContext, useEffect, useState } from "react";
+import React, { createContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 
 export const DesktopContext = createContext<
@@ -48,8 +47,8 @@ export const DesktopProvider = ({
   });
   const [triggerFetch, { data: desktop, isLoading, isFetching, error }] =
     useLazyGetDesktopQuery(undefined);
-  const [createDesktop, { isLoading: creating }] = useCreateDesktopMutation();
-  const [uploadBg, { isLoading: uploading }] = useCustomBackgroundMutation();
+  const [createDesktop] = useCreateDesktopMutation();
+  const [uploadBg] = useCustomBackgroundMutation();
 
   const desktopError = error as ErrorType;
   useEffect(() => {
