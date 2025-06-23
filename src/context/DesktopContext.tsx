@@ -57,7 +57,7 @@ export const DesktopProvider = ({
       triggerFetch();
       openAuth(false);
     }
-  }, [user]);
+  }, [user, isFromReg]);
 
   const handleCreateDesktop = async () => {
     await createDesktop()
