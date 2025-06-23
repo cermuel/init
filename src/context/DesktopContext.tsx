@@ -39,7 +39,13 @@ export const DesktopProvider = ({
     getInitialWidgets()
   );
   const [showWidgetManager, setShowWidgetManager] = useState<boolean>(false);
-
+  const [isFromReg] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("init_isFromReg");
+      return stored ? JSON.parse(stored) : false;
+    }
+    return false;
+  });
   const [triggerFetch, { data: desktop, isLoading, isFetching, error }] =
     useLazyGetDesktopQuery(undefined);
   const [createDesktop, { isLoading: creating }] = useCreateDesktopMutation();
@@ -47,11 +53,11 @@ export const DesktopProvider = ({
 
   const desktopError = error as ErrorType;
   useEffect(() => {
-    if (user) {
+    if (user && !isFromReg) {
       triggerFetch();
       openAuth(false);
     }
-  }, []);
+  }, [user]);
 
   const handleCreateDesktop = async () => {
     await createDesktop()
