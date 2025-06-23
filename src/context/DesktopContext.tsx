@@ -52,6 +52,7 @@ export const DesktopProvider = ({
 
   const desktopError = error as ErrorType;
   useEffect(() => {
+    console.log({ user, isFromReg });
     if (user && !isFromReg) {
       triggerFetch();
       openAuth(false);
@@ -102,7 +103,6 @@ export const DesktopProvider = ({
     localStorage.setItem("init_widgets", JSON.stringify(widgetsToSave));
   }, [widgets]);
 
-  console.log({ desktop });
   const addWidget = ({
     newWidget,
     icons,
@@ -161,7 +161,6 @@ export const DesktopProvider = ({
     setCustomBg(url);
     await uploadBg({ desktopId: desktop.data.id, file })
       .then(async (res) => {
-        console.log({ res });
         showToast(
           res.data.message ?? "Background changed successfully",
           "success"
