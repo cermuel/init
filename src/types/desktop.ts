@@ -27,3 +27,31 @@ export type WidgetType = {
   y: number;
   content?: string;
 };
+
+export interface DesktopResponse {
+  data: {
+    id: string;
+    createdAt: string;
+    updatedAt: string;
+    deletedAt: string | null;
+    widgets: any[];
+    icons: any[];
+    userId: string;
+    customBackground: string | null;
+  };
+}
+export interface UploadIconPayload {
+  dto: {
+    code: "string";
+    label: "string";
+    xPosition: number;
+    yPosition: number;
+    isCustomApp: boolean;
+  };
+  desktopId: string;
+}
+
+export interface UploadBgPayload {
+  file: File;
+  desktopId: string;
+}

@@ -1,5 +1,5 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
-import { accessToken } from "../selectors/userSelector";
+import { accessToken, selectActiveUser } from "../selectors/userSelector";
 import { RootState } from "../store";
 
 const BASE_URI: string = process.env.NEXT_PUBLIC_API_URL as string;
@@ -9,15 +9,15 @@ export const apiSlice = createApi({
   baseQuery: fetchBaseQuery({
     baseUrl: BASE_URI,
     prepareHeaders: (headers, { getState }) => {
-      const token = accessToken(getState() as RootState);
+      const user = selectActiveUser(getState() as RootState);
 
-      if (token) {
-        headers.set("Authorization", `Bearer ${token}`);
+      if (user?.token) {
+        headers.set("Authorization", `Bearer ${user.token}`);
       }
 
       return headers;
     },
   }),
   endpoints: (builder) => ({}),
-  tagTypes: ["User"],
+  tagTypes: ["User", "Desktop"],
 });

@@ -1,10 +1,11 @@
 import { LoginDetails, RegisterDetails } from "@/types/auth";
 import { apiSlice } from "../apiSlice";
 import { UpdateUserPayload, GetProfileResponse } from "@/types/user";
-import { addUser } from "../userSlice";
+import { addUser, removeUser } from "../userSlice";
 import { useSelector } from "react-redux";
 import { accessToken } from "@/services/selectors/userSelector";
 import { RootState } from "@/services/store";
+import { FetchError } from "@/types/api";
 
 export const userSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
@@ -14,6 +15,7 @@ export const userSlice = apiSlice.injectEndpoints({
         method: "GET",
       }),
     }),
+
     changeUsername: builder.mutation({
       query: (newUsername: string) => ({
         url: `users/username`,
@@ -37,7 +39,6 @@ export const userSlice = apiSlice.injectEndpoints({
       }),
       providesTags: ["User"],
       async onQueryStarted(_, { dispatch, queryFulfilled, getState }) {
-        console.log("fetchinv");
         try {
           const state = getState() as RootState;
           const token = accessToken(state) || "";
@@ -45,15 +46,15 @@ export const userSlice = apiSlice.injectEndpoints({
 
           const { username, avatar, firstName, lastName, emailAddress } =
             data.data;
-          console.log({ username });
+
           dispatch(
             addUser({
               username: username ?? "",
               avatar: {
-                seed: avatar?.Seed ?? "",
-                style: avatar?.Style ?? "",
-                url: avatar?.Url ?? "",
-                color: avatar?.Color ?? "",
+                seed: avatar?.seed ?? "",
+                style: avatar?.style ?? "",
+                url: avatar?.url ?? "",
+                color: avatar?.color ?? "",
               },
               firstName: firstName ?? "",
               lastName: lastName ?? "",
@@ -61,9 +62,7 @@ export const userSlice = apiSlice.injectEndpoints({
               token,
             })
           );
-        } catch (err) {
-          console.log({ err });
-        }
+        } catch (err) {}
       },
     }),
   }),

@@ -34,7 +34,6 @@ import ControlCenter from "@/components/controls/ControlCenter";
 import Brightness from "@/components/ui/Brightness";
 import { LuLayoutPanelTop } from "react-icons/lu";
 import AIAgent from "@/components/ai/AIAgent";
-import LoadingScreen from "@/components/ui/LoadingScreen";
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -134,7 +133,6 @@ export default function Home() {
 
   return (
     <>
-      <LoadingScreen />
       <AIAgent />
       <Brightness />
       {auth && <Auth />}

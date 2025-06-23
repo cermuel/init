@@ -36,3 +36,8 @@ export interface ResetPasswordPayload {
   otp: string;
   password: string;
 }
+export interface ResendOTPPayload {
+  emailAddress: string;
+  username?: string;
+  phoneNumber?: string;
+}

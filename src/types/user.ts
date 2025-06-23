@@ -2,10 +2,10 @@ export interface UpdateUserPayload {
   firstName?: string;
   lastName?: string;
   avatar?: {
-    Style?: string;
-    Seed?: string;
-    Url?: string;
-    Color?: string;
+    style?: string;
+    seed?: string;
+    url?: string;
+    color?: string;
   };
 }
 
@@ -16,10 +16,10 @@ export interface GetProfileResponse {
     lastName: string | null;
     username: string | null;
     avatar: {
-      Style: string;
-      Seed: string;
-      Url: string;
-      Color: string;
+      style: string;
+      seed: string;
+      url: string;
+      color: string;
     } | null;
     phoneNumber: string | null;
   };

@@ -10,6 +10,7 @@ import ToastProvider from "@/context/ToastContext";
 import ReduxProvider from "@/providers/ReduxProvider";
 import { Metadata } from "next";
 import AIAgent from "@/components/ai/AIAgent";
+import LoadingScreen from "@/components/ui/LoadingScreen";
 
 export const metadata: Metadata = {
   title: "Init",
@@ -40,6 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </Head>
 
         <ReduxProvider>
+          <LoadingScreen />
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ToastProvider>
               <DesktopProvider>

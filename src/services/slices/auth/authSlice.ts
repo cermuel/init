@@ -1,6 +1,7 @@
 import {
   LoginDetails,
   RegisterDetails,
+  ResendOTPPayload,
   ResetPasswordPayload,
 } from "@/types/auth";
 import { apiSlice } from "../apiSlice";
@@ -29,6 +30,13 @@ export const authSlice = apiSlice.injectEndpoints({
         body: dto,
       }),
     }),
+    resendOTP: builder.mutation({
+      query: (dto: ResendOTPPayload) => ({
+        url: "auth/resend-otp",
+        method: "POST",
+        body: dto,
+      }),
+    }),
   }),
   overrideExisting: true,
 });
@@ -37,4 +45,5 @@ export const {
   useLoginMutation,
   useRegisterMutation,
   useResetPasswordMutation,
+  useResendOTPMutation,
 } = authSlice;

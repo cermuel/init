@@ -77,10 +77,10 @@ const AvatarGenerator = () => {
   const handleUpdateProfile = async () => {
     await updateProfile({
       avatar: {
-        Seed: seed,
-        Style: avatarStyle,
-        Color: color,
-        Url: svgUri,
+        seed: seed,
+        style: avatarStyle,
+        color: color,
+        url: svgUri,
       },
     })
       .unwrap()

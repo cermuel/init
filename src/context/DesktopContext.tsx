@@ -1,11 +1,23 @@
 "use client";
 
+import { DelayedLoader } from "@/components/ui/DelayedLoader";
+import ScreenLoader from "@/components/ui/ScreenLoader";
+import { useToast } from "@/hooks/useToast";
 import { wallpaperDB } from "@/lib/wallpaper";
+import { selectActiveUser } from "@/services/selectors/userSelector";
+import {
+  useCreateDesktopMutation,
+  useCustomBackgroundMutation,
+  useLazyGetDesktopQuery,
+} from "@/services/slices/desktop/desktopSlice";
+import { removeUser } from "@/services/slices/userSlice";
+import { ErrorType, FetchError } from "@/types/api";
 import { ContextType } from "@/types/context";
 import { DesktopIconType, WidgetIconType } from "@/types/desktop";
 import { getInitialWidgets } from "@/utils/desktop.items";
 import { helpers } from "@/utils/helpers";
 import React, { createContext, useContext, useEffect, useState } from "react";
+import { useDispatch, useSelector } from "react-redux";
 
 export const DesktopContext = createContext<
   ContextType["DesktopContext"] | undefined
@@ -16,6 +28,9 @@ export const DesktopProvider = ({
 }: {
   children: React.ReactNode;
 }) => {
+  const { showToast } = useToast();
+  const dispatch = useDispatch();
+  const user = useSelector(selectActiveUser);
   const [auth, openAuth] = useState<boolean>(false);
   const [customBg, setCustomBg] = useState<string | null>(null);
   const [showIcons, setShowIcons] = useState(true);
@@ -24,6 +39,52 @@ export const DesktopProvider = ({
     getInitialWidgets()
   );
   const [showWidgetManager, setShowWidgetManager] = useState<boolean>(false);
+
+  const [triggerFetch, { data: desktop, isLoading, isFetching, error }] =
+    useLazyGetDesktopQuery(undefined);
+  const [createDesktop, { isLoading: creating }] = useCreateDesktopMutation();
+  const [uploadBg, { isLoading: uploading }] = useCustomBackgroundMutation();
+
+  const desktopError = error as ErrorType;
+  useEffect(() => {
+    if (user) {
+      triggerFetch();
+      openAuth(false);
+    }
+  }, []);
+
+  const handleCreateDesktop = async () => {
+    await createDesktop()
+      .unwrap()
+      .then(() => {
+        triggerFetch();
+      })
+      .catch((err: ErrorType) =>
+        console.log(
+          typeof err?.data?.message === "string"
+            ? err?.data?.message
+            : err?.data?.message[0] ?? "Error creating desktop",
+          "error"
+        )
+      );
+  };
+
+  useEffect(() => {
+    if (
+      desktopError &&
+      desktopError.data.message === "User desktop not found"
+    ) {
+      handleCreateDesktop();
+    } else if (desktopError && desktopError.data.statusCode === 401) {
+      showToast("Session expired. Please login again.", "error");
+      dispatch(removeUser(user?.emailAddress ?? ""));
+      openAuth(true);
+    }
+  }, [desktopError]);
+
+  useEffect(() => {
+    triggerFetch();
+  }, []);
 
   useEffect(() => {
     const widgetsToSave = widgets.map(({ id, type, x, y, content }) => ({
@@ -36,6 +97,7 @@ export const DesktopProvider = ({
     localStorage.setItem("init_widgets", JSON.stringify(widgetsToSave));
   }, [widgets]);
 
+  console.log({ desktop });
   const addWidget = ({
     newWidget,
     icons,
@@ -77,15 +139,39 @@ export const DesktopProvider = ({
   };
 
   useEffect(() => {
-    wallpaperDB.loadWallpaper().then((url: string | null) => {
-      if (url) setCustomBg(url);
-    });
-  }, []);
+    if (!desktop) return;
+    setCustomBg(desktop.data.customBackground);
+  }, [desktop]);
 
-  const setWallpaperFromFile = async (file: File) => {
+  const setWallpaperFromFile = async (file?: File) => {
+    if (!desktop || !user) {
+      showToast("Unauthorized, please login again", "error");
+      return;
+    }
+    if (!file) {
+      return setCustomBg(null);
+    }
     await wallpaperDB.saveWallpaper(file);
     const url = URL.createObjectURL(file);
     setCustomBg(url);
+    await uploadBg({ desktopId: desktop.data.id, file })
+      .then(async (res) => {
+        console.log({ res });
+        showToast(
+          res.data.message ?? "Background changed successfully",
+          "success"
+        );
+      })
+      .catch((err: ErrorType) => {
+        err.data.statusCode == 401 &&
+          showToast("Unauthorized, please login again", "error");
+        showToast(
+          typeof err?.data?.message === "string"
+            ? err?.data?.message
+            : err?.data?.message[0] ?? "Error saving background",
+          "error"
+        );
+      });
   };
 
   const resetWallpaper = async () => {
@@ -111,9 +197,14 @@ export const DesktopProvider = ({
         resetWallpaper,
         showIcons,
         setShowIcons,
+        triggerFetch,
       }}
     >
-      {children}
+      <DelayedLoader
+        isLoading={isLoading}
+        isFetching={isFetching}
+        children={children}
+      />
     </DesktopContext.Provider>
   );
 };

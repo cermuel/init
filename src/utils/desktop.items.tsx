@@ -7,7 +7,6 @@ import DigitalClock from "@/components/widgets/DigitalClock";
 import { ContextType } from "@/types/context";
 import { ReactNode } from "react";
 import {
-  FaTools,
   FaRegLaugh,
   FaChalkboardTeacher,
   FaRegCommentDots,
@@ -18,9 +17,7 @@ import {
   FaCubes,
 } from "react-icons/fa";
 import { MdWorkOutline } from "react-icons/md";
-import { IoIosApps } from "react-icons/io";
 import { BsFillLightningChargeFill } from "react-icons/bs";
-import { useApps } from "@/hooks/useApp";
 
 export const getInitialIcons = (
   myApps: ContextType["CustomApp"][]

@@ -17,13 +17,15 @@ import Button from "../ui/shared/button";
 import { UserState } from "@/types/auth";
 import { FaTrash } from "react-icons/fa";
 import { getProfile } from "@/services/slices/user/userApiSlice";
+import { useToast } from "@/hooks/useToast";
 
 const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
   const user = useSelector((state: RootState) => state.user.activeUser);
   const userList = useSelector((state: RootState) => state.user.allUsers);
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
-  const { openAuth } = useDesktop();
+  const { openAuth, triggerFetch, resetWallpaper } = useDesktop();
+  const { showToast } = useToast();
 
   const [error, setError] = useState(false);
 
@@ -34,11 +36,15 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
       u.username !== ""
   );
 
-  console.log({ userList });
   const handleSwitch = (email: string) => {
     if (email !== user?.emailAddress) {
       dispatch(switchUser(email));
-      user?.token && dispatch(setToken(user.token));
+
+      setTimeout(() => {
+        user?.token && dispatch(setToken(user.token));
+        triggerFetch();
+        openAuth(false);
+      }, 200);
     }
   };
 
@@ -52,7 +58,6 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
   useEffect(() => {
     if (userList.length == 0) {
       setOpenUser(false);
-      openAuth(true);
     }
   }, [userList]);
 
@@ -130,7 +135,13 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
             ) : (
               <div className="w-full flex justify-center">
                 <Button
-                  onClick={() => dispatch(logoutUser())}
+                  onClick={() => {
+                    dispatch(logoutUser());
+                    setTimeout(() => {
+                      resetWallpaper();
+                      showToast("Logout successfully", "success");
+                    }, 200);
+                  }}
                   className="bg-[#ec0000]"
                 >
                   Logout

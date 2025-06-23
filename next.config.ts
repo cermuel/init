@@ -21,7 +21,8 @@ const nextConfig: NextConfig = {
       "thisis-images.scdn.co",
       "image-cdn-ak.spotifycdn.com",
       "res.cloudinary.com",
-    ], // 👈 Add this line
+      "initblob.blob.core.windows.net",
+    ],
   },
   eslint: {
     ignoreDuringBuilds: true,

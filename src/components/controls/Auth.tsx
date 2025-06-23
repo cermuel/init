@@ -3,7 +3,11 @@
 import { useTheme } from "next-themes";
 import React, { useEffect, useRef, useState } from "react";
 import AuthInput from "../ui/shared/auth-input";
-import { LoginDetails, RegisterDetails, UserState } from "@/types/auth";
+import {
+  LoginDetails,
+  RegisterDetails,
+  ResetPasswordPayload,
+} from "@/types/auth";
 import { useToast } from "@/hooks/useToast";
 import { useDispatch, useSelector } from "react-redux";
 import AvatarGenerator from "./Avatar";
@@ -11,13 +15,13 @@ import {
   addUser,
   setToken as setReduxToken,
   setUserToken,
-  switchUser,
 } from "@/services/slices/userSlice";
 import { IoClose } from "react-icons/io5";
 import { useDesktop } from "@/hooks/useDesktop";
 import {
   useLoginMutation,
   useRegisterMutation,
+  useResendOTPMutation,
   useResetPasswordMutation,
 } from "@/services/slices/auth/authSlice";
 import {
@@ -54,15 +58,27 @@ const Auth = () => {
 
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loginSteps, setLoginSteps] = useState(1);
   const [registerSteps, setRegisterSteps] = useState(1);
+  const [resetSteps, setResetSteps] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [screen, setScreen] = useState<"login" | "register">("login");
+  const [screen, setScreen] = useState<"login" | "register" | "reset">("login");
   const [code, setCode] = useState<string>("");
   const [isExists, setIsExists] = useState<boolean>(false);
-  const [isFromReg, setisFromReg] = useState(false);
+  const [isFromReg, setisFromReg] = useState(() => {
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("init_isFromReg");
+      return stored ? JSON.parse(stored) : false;
+    }
+    return false;
+  });
   const [dummyLoading, setDummyLoading] = useState(false);
+  const [resetPasswordDTO, setResetPasswordDTO] =
+    useState<ResetPasswordPayload>({
+      emailAddress: "",
+      password: "",
+      otp: "",
+    });
 
   const debouncedUsername = useDebounce(username, 500);
 
@@ -73,6 +89,7 @@ const Auth = () => {
   const [login, { isLoading: logging }] = useLoginMutation();
   const [resetPassword, { isLoading: resetting, error: resetError }] =
     useResetPasswordMutation();
+  const [resendOTP, { isLoading: resending }] = useResendOTPMutation();
   const [register, { isLoading: registering }] = useRegisterMutation();
   const [changeUsername, { isLoading: changing }] = useChangeUsernameMutation();
   const { refetch } = useGetProfileQuery();
@@ -92,9 +109,9 @@ const Auth = () => {
         const token = res.data.token;
 
         dispatch(setReduxToken(token));
-
         setTimeout(() => {
           dispatch(apiSlice.util.invalidateTags(["User"]));
+          dispatch(getProfile.initiate());
         }, 100);
 
         setDummyLoading(true);
@@ -126,7 +143,7 @@ const Auth = () => {
       .unwrap()
       .then(() => {
         showToast("Registration successful", "success");
-
+        setisFromReg(true);
         setRegisterSteps(2);
         dispatch(apiSlice.util.resetApiState());
       })
@@ -140,25 +157,46 @@ const Auth = () => {
       );
   };
   const handleResetPassword = async () => {
-    if (!registerDetails?.emailAddress || !code || !password) {
-      showToast("Password is required!", "warning");
-      return;
+    if (screen === "register") {
+      if (!registerDetails?.emailAddress || !code || !password) {
+        showToast("Password and OTP is required!", "warning");
+        return;
+      }
+      if (password.length < 8) {
+        showToast("Password must be at least 8 characters long!", "warning");
+        return;
+      }
+    } else {
+      if (
+        !resetPasswordDTO?.emailAddress ||
+        !resetPasswordDTO.otp ||
+        !resetPasswordDTO.password
+      ) {
+        showToast("Password and OTP is required!", "warning");
+        return;
+      }
+      if (resetPasswordDTO.password.length < 8) {
+        showToast("Password must be at least 8 characters long!", "warning");
+        return;
+      }
     }
-    if (password.length < 8) {
-      showToast("Password must be at least 8 characters long!", "warning");
-      return;
-    }
-    await resetPassword({
-      emailAddress: registerDetails?.emailAddress,
-      username: "",
-      phoneNumber: "",
-      password,
-      otp: code,
-    })
+
+    await resetPassword(
+      screen === "register"
+        ? {
+            emailAddress: registerDetails?.emailAddress,
+            username: "",
+            phoneNumber: "",
+            password,
+            otp: code,
+          }
+        : resetPasswordDTO
+    )
       .unwrap()
       .then((res) => {
         res.isSuccessful &&
           showToast(res.message ?? "Registration successful", "success");
+        setisFromReg(true);
         setLoginSteps(1);
         setScreen("login");
         setisFromReg(true);
@@ -199,18 +237,44 @@ const Auth = () => {
         )
       );
   };
+  const handleResendOTP = async () => {
+    if (!resetPasswordDTO.emailAddress) {
+      showToast("Username is required!", "warning");
+      return;
+    }
+    await resendOTP({ emailAddress: resetPasswordDTO.emailAddress })
+      .unwrap()
+      .then((res) => {
+        setResetSteps(2);
+        res.isSuccessful &&
+          showToast(res?.message ?? "OTP sent successfully", "success");
+        dispatch(apiSlice.util.invalidateTags(["User"]));
+        dispatch(getProfile.initiate());
+      })
+      .catch((err: ErrorType) =>
+        showToast(
+          typeof err?.data?.message === "string"
+            ? err?.data?.message
+            : err?.data?.message[0] ?? "Error setting username",
+          "error"
+        )
+      );
+  };
 
   useEffect(() => {
     if (!availableUsername) return;
     setIsExists(availableUsername.data.exists);
   }, [availableUsername]);
 
+  // Persist isFromReg to localStorage
+  useEffect(() => {
+    localStorage.setItem("init_isFromReg", JSON.stringify(isFromReg));
+  }, [isFromReg]);
+
   useEffect(() => {
     const handleRefetch = async () => {
       setisFromReg(false);
       const profileResult = await refetch();
-
-      console.log({ profileResult });
 
       if (!profileResult.isSuccess || !profileResult.data) {
         setScreen("register");
@@ -236,12 +300,7 @@ const Auth = () => {
       } else {
         dispatch(
           addUser({
-            avatar: {
-              seed: avatar.Seed,
-              style: avatar.Style,
-              url: avatar.Url,
-              color: avatar.Color,
-            },
+            avatar,
             username,
             emailAddress,
             token,
@@ -255,9 +314,7 @@ const Auth = () => {
       if (isFromReg) {
         handleRefetch();
       } else {
-        setTimeout(() => {
-          openAuth(false);
-        }, 2100);
+        openAuth(false);
       }
     }
   }, [token]);
@@ -291,7 +348,11 @@ const Auth = () => {
               />
             </div>
             <h1 className="text-4xl font-semibold">
-              {screen == "register" ? "Create Init Account" : "Sign in to Init"}
+              {screen == "register"
+                ? "Create Account"
+                : screen === "login"
+                ? "Sign in to Init"
+                : "Reset Password"}
             </h1>
             {screen === "login" ? (
               <>
@@ -346,7 +407,7 @@ const Auth = () => {
                   />
                 )}
               </>
-            ) : (
+            ) : screen === "register" ? (
               <>
                 {registerSteps == 1 ? (
                   <>
@@ -437,6 +498,67 @@ const Auth = () => {
                   />
                 )}
               </>
+            ) : (
+              <>
+                {resetSteps == 1 ? (
+                  <>
+                    <AuthInput
+                      placeholder="Email Address"
+                      onSubmit={() => {
+                        if (
+                          resetPasswordDTO &&
+                          resetPasswordDTO.emailAddress.length > 0
+                        ) {
+                          handleResendOTP();
+                        }
+                      }}
+                      loading={resending}
+                      value={resetPasswordDTO.emailAddress}
+                      onChange={(e) =>
+                        setResetPasswordDTO({
+                          ...resetPasswordDTO,
+                          emailAddress: e.target.value,
+                        })
+                      }
+                    />
+                  </>
+                ) : (
+                  <>
+                    <CodeInput
+                      value={resetPasswordDTO.otp}
+                      onChange={(d) =>
+                        setResetPasswordDTO({ ...resetPasswordDTO, otp: d })
+                      }
+                      loading={resetting}
+                      disabled={resetting}
+                      info={
+                        resetError
+                          ? "Invalid code"
+                          : "Enter the 6-digit code sent to your email"
+                      }
+                      infoType={resetError ? "error" : "default"}
+                      length={6}
+                    />
+                    <AuthInput
+                      placeholder="Password"
+                      onSubmit={() => {
+                        if (resetPasswordDTO.password.length > 0) {
+                          handleResetPassword();
+                        }
+                      }}
+                      value={resetPasswordDTO.password}
+                      onChange={(e) =>
+                        setResetPasswordDTO({
+                          ...resetPasswordDTO,
+                          password: e.target.value,
+                        })
+                      }
+                      type="password"
+                      loading={resetting}
+                    />
+                  </>
+                )}
+              </>
             )}
           </>
           {screen === "login" && (
@@ -454,7 +576,10 @@ const Auth = () => {
           <div className="h-[0.1px] bg-gray-500 w-[50%] rounded-full"></div>
           <div className="flex flex-col gap-1">
             {screen === "login" && (
-              <button className="text-[#737cde] font-medium text-xs hover:underline transition-all duration-300 cursor-pointer">
+              <button
+                onClick={() => setScreen("reset")}
+                className="text-[#737cde] font-medium text-xs hover:underline transition-all duration-300 cursor-pointer"
+              >
                 Forgot Init username or password?
               </button>
             )}
@@ -468,7 +593,7 @@ const Auth = () => {
               }}
               className="text-[#737cde] font-medium text-xs hover:underline transition-all duration-300 cursor-pointer"
             >
-              {screen == "register" ? "Sign in to Init" : "Create Init Account"}
+              {screen == "login" ? "Create Init Account" : "Sign in to Init"}
             </button>
           </div>
         </>

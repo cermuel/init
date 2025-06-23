@@ -26,6 +26,7 @@ const DesktopMenu = ({
     setShowIcons,
     setShowWidgetManager,
   } = useDesktop();
+
   const [hoveredItem, setHoveredItem] = useState<null | "new" | "sortBy">(null);
 
   const bg = theme === "dark" ? "bg-[#121212]" : "bg-[#F6F6F6]";

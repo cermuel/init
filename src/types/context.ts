@@ -67,6 +67,7 @@ type AppsState = {
 };
 
 type DesktopContextType = {
+  triggerFetch: () => void;
   brightness: number;
   setBrightness: Dispatch<number>;
   customBg: string | null;
