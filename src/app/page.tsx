@@ -25,7 +25,7 @@ import TriggerAssistant from "@/components/extras/TriggerAssistant";
 import AppLauncher from "@/components/layout/AppLauncher";
 import InitStore from "@/components/apps/Store";
 import Auth from "@/components/controls/Auth";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { UserState } from "@/types/auth";
 import { RootState } from "@/services/store";
 import User from "@/components/controls/User";
@@ -34,6 +34,7 @@ import ControlCenter from "@/components/controls/ControlCenter";
 import Brightness from "@/components/ui/Brightness";
 import { LuLayoutPanelTop } from "react-icons/lu";
 import AIAgent from "@/components/ai/AIAgent";
+import { setToken } from "@/services/slices/userSlice";
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -124,7 +125,7 @@ export default function Home() {
     : "/images/bg/light.jpg";
 
   const handleOpen = () => {
-    if (userList.length === 0 || !user) {
+    if (userList.length === 0 && !user) {
       openAuth(true);
     } else {
       setOpenUser(true);

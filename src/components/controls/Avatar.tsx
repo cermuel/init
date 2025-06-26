@@ -27,7 +27,7 @@ const formatStyleName = (name: string) => {
 
 const AvatarGenerator = () => {
   const { theme } = useTheme();
-  const { openAuth } = useDesktop();
+  const { openAuth, setIsFromReg } = useDesktop();
   const { showToast } = useToast();
   const dispatch = useDispatch<AppDispatch>();
   const [avatarStyle, changeAvatarStyle] =
@@ -88,6 +88,7 @@ const AvatarGenerator = () => {
         showToast("Avatar updated successfully!", "success");
         dispatch(getProfile.initiate());
         openAuth(false);
+        setIsFromReg(false);
       })
       .catch((err: ErrorType) =>
         showToast(

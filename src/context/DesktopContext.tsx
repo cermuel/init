@@ -8,12 +8,13 @@ import {
   useCreateDesktopMutation,
   useCustomBackgroundMutation,
   useLazyGetDesktopQuery,
+  useUploadIconMutation,
 } from "@/services/slices/desktop/desktopSlice";
 import { removeUser } from "@/services/slices/userSlice";
 import { ErrorType } from "@/types/api";
 import { ContextType } from "@/types/context";
 import { DesktopIconType, WidgetIconType } from "@/types/desktop";
-import { getInitialWidgets } from "@/utils/desktop.items";
+import { defaultIcons, getInitialWidgets } from "@/utils/desktop.items";
 import { helpers } from "@/utils/helpers";
 import React, { createContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -38,7 +39,7 @@ export const DesktopProvider = ({
     getInitialWidgets()
   );
   const [showWidgetManager, setShowWidgetManager] = useState<boolean>(false);
-  const [isFromReg] = useState(() => {
+  const [isFromReg, setIsFromReg] = useState(() => {
     if (typeof window !== "undefined") {
       const stored = localStorage.getItem("init_isFromReg");
       return stored ? JSON.parse(stored) : false;
@@ -47,32 +48,72 @@ export const DesktopProvider = ({
   });
   const [triggerFetch, { data: desktop, isLoading, isFetching, error }] =
     useLazyGetDesktopQuery(undefined);
-  const [createDesktop] = useCreateDesktopMutation();
+  const [createDesktop, { isLoading: creating }] = useCreateDesktopMutation();
   const [uploadBg] = useCustomBackgroundMutation();
+  const [uploadIcon, { isLoading: uploading }] = useUploadIconMutation();
 
   const desktopError = error as ErrorType;
+
   useEffect(() => {
-    console.log({ user, isFromReg });
+    if (typeof window !== "undefined") {
+      const stored = localStorage.getItem("init_isFromReg");
+      setIsFromReg(stored ? JSON.parse(stored) : true);
+    }
+  }, [user]);
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("init_isFromReg", JSON.parse(isFromReg));
+    }
+  }, [isFromReg]);
+
+  useEffect(() => {
     if (user && !isFromReg) {
       triggerFetch();
       openAuth(false);
+      setTimeout(() => {
+        setIsFromReg(true);
+      }, 200);
     }
   }, [user, isFromReg]);
 
-  const handleCreateDesktop = async () => {
-    await createDesktop()
-      .unwrap()
-      .then(() => {
-        triggerFetch();
-      })
-      .catch((err: ErrorType) =>
-        console.log(
-          typeof err?.data?.message === "string"
-            ? err?.data?.message
-            : err?.data?.message[0] ?? "Error creating desktop",
-          "error"
+  const handleIcons = async (desktopId: string) => {
+    try {
+      await Promise.all(
+        defaultIcons.map((icon) =>
+          uploadIcon({
+            dto: {
+              code: icon.name,
+              label: icon.label,
+              xPosition: icon.x,
+              yPosition: icon.y,
+              isCustomApp: false,
+            },
+            desktopId,
+          })
         )
       );
+      triggerFetch();
+    } catch (err: any) {
+      const errorMessage =
+        typeof err?.data?.message === "string"
+          ? err.data.message
+          : err?.data?.message?.[0] ?? "Error creating desktop";
+      console.log({ errorMessage });
+    }
+  };
+  const handleCreateDesktop = async () => {
+    try {
+      const res = await createDesktop().unwrap();
+      const desktopId = res.id ?? res.data.id;
+      handleIcons(desktopId);
+      triggerFetch();
+    } catch (err: any) {
+      const errorMessage =
+        typeof err?.data?.message === "string"
+          ? err.data.message
+          : err?.data?.message?.[0] ?? "Error creating desktop";
+      console.log({ errorMessage });
+    }
   };
 
   useEffect(() => {
@@ -89,10 +130,6 @@ export const DesktopProvider = ({
   }, [desktopError]);
 
   useEffect(() => {
-    triggerFetch();
-  }, []);
-
-  useEffect(() => {
     const widgetsToSave = widgets.map(({ id, type, x, y, content }) => ({
       id,
       type,
@@ -102,6 +139,17 @@ export const DesktopProvider = ({
     }));
     localStorage.setItem("init_widgets", JSON.stringify(widgetsToSave));
   }, [widgets]);
+
+  useEffect(() => {
+    const navEntries = performance.getEntriesByType(
+      "navigation"
+    ) as PerformanceNavigationTiming[];
+    const navType = navEntries[0]?.type;
+
+    if (navType === "reload" || navType === "navigate") {
+      triggerFetch();
+    }
+  }, []);
 
   const addWidget = ({
     newWidget,
@@ -146,6 +194,9 @@ export const DesktopProvider = ({
   useEffect(() => {
     if (!desktop) return;
     setCustomBg(desktop.data.customBackground);
+    if (!desktop.data.icons || desktop.data.icons.length === 0) {
+      handleIcons(desktop.data.id);
+    }
   }, [desktop]);
 
   const setWallpaperFromFile = async (file?: File) => {
@@ -202,10 +253,13 @@ export const DesktopProvider = ({
         showIcons,
         setShowIcons,
         triggerFetch,
+        isFromReg,
+        setIsFromReg,
+        desktop,
       }}
     >
       <DelayedLoader
-        isLoading={isLoading}
+        isLoading={isLoading || creating || uploading}
         isFetching={isFetching}
         children={children}
       />

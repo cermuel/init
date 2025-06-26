@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useLayoutEffect, useRef, useState } from "react";
 import AuthInput from "../ui/shared/auth-input";
 import {
   LoginDetails,
@@ -40,7 +40,7 @@ import { apiSlice } from "@/services/slices/apiSlice";
 const Auth = () => {
   const { theme } = useTheme();
   const { showToast } = useToast();
-  const { openAuth } = useDesktop();
+  const { openAuth, isFromReg, setIsFromReg } = useDesktop();
   const dispatch = useDispatch<AppDispatch>();
 
   const token = useSelector((state: RootState) => state.user.token);
@@ -65,13 +65,6 @@ const Auth = () => {
   const [screen, setScreen] = useState<"login" | "register" | "reset">("login");
   const [code, setCode] = useState<string>("");
   const [isExists, setIsExists] = useState<boolean>(false);
-  const [isFromReg, setisFromReg] = useState(() => {
-    if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("init_isFromReg");
-      return stored ? JSON.parse(stored) : false;
-    }
-    return false;
-  });
   const [dummyLoading, setDummyLoading] = useState(false);
   const [resetPasswordDTO, setResetPasswordDTO] =
     useState<ResetPasswordPayload>({
@@ -107,7 +100,6 @@ const Auth = () => {
       .unwrap()
       .then(async (res) => {
         const token = res.data.token;
-
         dispatch(setReduxToken(token));
         setTimeout(() => {
           dispatch(apiSlice.util.invalidateTags(["User"]));
@@ -143,7 +135,7 @@ const Auth = () => {
       .unwrap()
       .then(() => {
         showToast("Registration successful", "success");
-        setisFromReg(true);
+        setIsFromReg(true);
         setRegisterSteps(2);
         dispatch(apiSlice.util.resetApiState());
       })
@@ -196,10 +188,9 @@ const Auth = () => {
       .then((res) => {
         res.isSuccessful &&
           showToast(res.message ?? "Registration successful", "success");
-        setisFromReg(true);
+        setIsFromReg(true);
         setLoginSteps(1);
         setScreen("login");
-        setisFromReg(true);
       })
       .catch((err: ErrorType) =>
         showToast(
@@ -245,6 +236,7 @@ const Auth = () => {
     await resendOTP({ emailAddress: resetPasswordDTO.emailAddress })
       .unwrap()
       .then((res) => {
+        setIsFromReg(true);
         setResetSteps(2);
         res.isSuccessful &&
           showToast(res?.message ?? "OTP sent successfully", "success");
@@ -261,22 +253,20 @@ const Auth = () => {
       );
   };
 
+  useLayoutEffect(() => {
+    setIsFromReg(true);
+  }, []);
+
   useEffect(() => {
     if (!availableUsername) return;
     setIsExists(availableUsername.data.exists);
   }, [availableUsername]);
 
-  // Persist isFromReg to localStorage
-  useEffect(() => {
-    localStorage.setItem("init_isFromReg", JSON.stringify(isFromReg));
-  }, [isFromReg]);
-
   useEffect(() => {
     const handleRefetch = async () => {
-      setisFromReg(false);
       const profileResult = await refetch();
 
-      if (!profileResult.isSuccess || !profileResult.data) {
+      if (!profileResult.data) {
         setScreen("register");
         setRegisterSteps(3);
         return;
@@ -284,12 +274,6 @@ const Auth = () => {
 
       const { username, avatar, emailAddress } = profileResult?.data?.data;
       if (!emailAddress || !token) return;
-      dispatch(
-        setUserToken({
-          emailAddress,
-          token,
-        })
-      );
 
       if (username === null) {
         setScreen("register");

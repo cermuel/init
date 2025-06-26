@@ -18,35 +18,33 @@ import {
 } from "react-icons/fa";
 import { MdWorkOutline } from "react-icons/md";
 import { BsFillLightningChargeFill } from "react-icons/bs";
-
+export const defaultIcons: DesktopIconType[] = [
+  {
+    name: "notes",
+    label: "Notes",
+    image: "/icons/apps/notes.svg",
+    x: 20,
+    y: 20,
+  },
+  {
+    name: "code",
+    label: "Code",
+    image: "/icons/apps/code.svg",
+    x: 20,
+    y: 120,
+  },
+  {
+    name: "store",
+    label: "Init Store",
+    image: "/icons/apps/store.svg",
+    x: 20,
+    y: 240,
+  },
+];
 export const getInitialIcons = (
   myApps: ContextType["CustomApp"][]
 ): DesktopIconType[] => {
   if (typeof window === "undefined") return [];
-
-  const defaultIcons: DesktopIconType[] = [
-    {
-      name: "notes",
-      label: "Notes",
-      image: "/icons/apps/notes.svg",
-      x: 20,
-      y: 20,
-    },
-    {
-      name: "code",
-      label: "Code",
-      image: "/icons/apps/code.svg",
-      x: 20,
-      y: 120,
-    },
-    {
-      name: "store",
-      label: "Init Store",
-      image: "/icons/apps/store.svg",
-      x: 20,
-      y: 240,
-    },
-  ];
 
   const customIcons: DesktopIconType[] = myApps?.map((app, index: number) => ({
     name: app.id,

@@ -7,7 +7,7 @@ export type DesktopIconType = {
   image: string;
   x: number;
   y: number;
-  fileId?: string;
+  id?: string;
   isCustomApp?: boolean;
 };
 
@@ -28,6 +28,20 @@ export type WidgetType = {
   content?: string;
 };
 
+export interface DesktopIcon {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  code: string;
+  label: string;
+  xPosition: number;
+  yPosition: number;
+  isCustomApp: boolean;
+  desktopId: string;
+  image: string | null;
+}
+
 export interface DesktopResponse {
   data: {
     id: string;
@@ -35,20 +49,24 @@ export interface DesktopResponse {
     updatedAt: string;
     deletedAt: string | null;
     widgets: any[];
-    icons: any[];
+    icons: DesktopIcon[];
     userId: string;
     customBackground: string | null;
   };
 }
 export interface UploadIconPayload {
   dto: {
-    code: "string";
-    label: "string";
+    code: string;
+    label: string;
     xPosition: number;
     yPosition: number;
     isCustomApp: boolean;
   };
   desktopId: string;
+}
+
+export interface UpdateIconPayload extends UploadIconPayload {
+  iconId: string;
 }
 
 export interface UploadBgPayload {

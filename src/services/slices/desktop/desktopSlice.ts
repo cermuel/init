@@ -2,6 +2,7 @@ import { ErrorType } from "@/types/api";
 import { apiSlice } from "../apiSlice";
 import {
   DesktopResponse,
+  UpdateIconPayload,
   UploadBgPayload,
   UploadIconPayload,
 } from "@/types/desktop";
@@ -26,6 +27,13 @@ export const desktopSlice = apiSlice.injectEndpoints({
         url: `desktops/${args.desktopId}/icons`,
         body: args.dto,
         method: "POST",
+      }),
+    }),
+    updateIcon: builder.mutation<any, UpdateIconPayload>({
+      query: (args) => ({
+        url: `desktops/${args.desktopId}/icons/${args.iconId}`,
+        body: args.dto,
+        method: "PATCH",
       }),
     }),
     uploadIconImage: builder.mutation<any, UploadIconPayload>({
@@ -55,4 +63,5 @@ export const {
   useCustomBackgroundMutation,
   useUploadIconMutation,
   useUploadIconImageMutation,
+  useUpdateIconMutation,
 } = desktopSlice;

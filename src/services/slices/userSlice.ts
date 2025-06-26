@@ -47,34 +47,21 @@ const userSlice = createSlice({
   initialState,
   reducers: {
     addUser: (state, action: PayloadAction<UserState>) => {
-      const existingIndex = state.allUsers.findIndex(
+      const exists = state.allUsers.find(
         (u) => u.emailAddress === action.payload.emailAddress
       );
-
-      if (existingIndex !== -1) {
-        state.allUsers[existingIndex] = action.payload;
-      } else {
+      if (!exists) {
         state.allUsers.push(action.payload);
+        localStorage.setItem("user_list", JSON.stringify(state.allUsers));
       }
-
       state.activeUser = action.payload;
-      localStorage.setItem("init_users", JSON.stringify(state.allUsers));
-
       localStorage.setItem("init_user", JSON.stringify(state.activeUser));
     },
     switchUser: (state, action: PayloadAction<string>) => {
       const found = state.allUsers.find(
         (u) => u.emailAddress === action.payload
       );
-      if (found) {
-        state.activeUser = found;
-        localStorage.setItem("init_user", JSON.stringify(state.activeUser));
-        state.token = state.activeUser.token ?? state.token;
-        localStorage.setItem(
-          "init_token",
-          state.activeUser.token ?? state.token ?? ""
-        );
-      }
+      if (found) state.activeUser = found;
     },
     removeUser: (state, action: PayloadAction<string>) => {
       state.allUsers = state.allUsers.filter(
@@ -83,7 +70,6 @@ const userSlice = createSlice({
       if (state.activeUser?.emailAddress === action.payload) {
         state.activeUser = state.allUsers[0] || null;
       }
-      localStorage.setItem("init_users", JSON.stringify(state.allUsers));
     },
     updateAvatar: (
       state,
@@ -99,7 +85,6 @@ const userSlice = createSlice({
           ? { ...user, avatar: state.activeUser!.avatar }
           : user
       );
-      localStorage.setItem("init_users", JSON.stringify(state.allUsers));
     },
     updateUsername: (state, action: PayloadAction<string>) => {
       if (state.activeUser) {
@@ -110,9 +95,6 @@ const userSlice = createSlice({
       state.isAuthenticated = false;
       state.token = null;
       state.activeUser = null;
-      state.allUsers.filter(
-        (u) => state.activeUser?.emailAddress !== u.emailAddress
-      );
       state.allUsers = [];
       localStorage.removeItem("init_token");
       localStorage.removeItem("init_user");
@@ -135,7 +117,7 @@ const userSlice = createSlice({
           ? { ...user, token: action.payload.token }
           : user
       );
-      localStorage.setItem("init_users", JSON.stringify(state.allUsers));
+      localStorage.setItem("init_user", JSON.stringify(state.allUsers));
     },
 
     resetAll: () => initialState,

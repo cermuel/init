@@ -1,5 +1,10 @@
 import { Dispatch } from "react";
-import { DesktopIconType, WidgetIconType, WidgetType } from "./desktop";
+import {
+  DesktopIconType,
+  DesktopResponse,
+  WidgetIconType,
+  WidgetType,
+} from "./desktop";
 
 type AppName =
   | "notes"
@@ -68,6 +73,8 @@ type AppsState = {
 
 type DesktopContextType = {
   triggerFetch: () => void;
+  isFromReg: boolean;
+  setIsFromReg: Dispatch<boolean>;
   brightness: number;
   setBrightness: Dispatch<number>;
   customBg: string | null;
@@ -79,6 +86,7 @@ type DesktopContextType = {
   setWidgets: Dispatch<WidgetIconType[]>;
   showWidgetManager: boolean;
   setShowWidgetManager: Dispatch<boolean>;
+  desktop: DesktopResponse | undefined;
   addWidget: ({
     newWidget,
     icons,

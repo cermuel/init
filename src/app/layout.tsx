@@ -41,7 +41,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </Head>
 
         <ReduxProvider>
-          <LoadingScreen />
+          {/* <LoadingScreen /> */}
           <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
             <ToastProvider>
               <DesktopProvider>

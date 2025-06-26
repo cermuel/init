@@ -1,5 +1,6 @@
 // context/AppsContext.tsx
 "use client";
+import { useDesktop } from "@/hooks/useDesktop";
 import { ContextType } from "@/types/context";
 import { DesktopIconType } from "@/types/desktop";
 import {
@@ -14,6 +15,7 @@ export const AppsContext = createContext<ContextType["AppsState"] | undefined>(
 );
 
 export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
+  const { desktop } = useDesktop();
   const [openedApps, setOpenedApps] = useState<
     Record<ContextType["AppName"], boolean>
   >({
@@ -75,6 +77,30 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
     setIcons(getInitialIcons(myApps));
   }, [myApps]);
 
+  useEffect(() => {
+    if (desktop && desktop.data.icons.length > 0) {
+      setIcons([
+        ...desktop.data.icons.map((icon) => {
+          return {
+            id: icon.id,
+            name: icon.code,
+            label: icon.label,
+            image:
+              icon.code === "notes"
+                ? "/icons/apps/notes.svg"
+                : icon.code === "code"
+                ? "/icons/apps/code.svg"
+                : icon.code === "store"
+                ? "/icons/apps/store.svg"
+                : icon.image ?? "/images/init.svg",
+            x: icon.xPosition,
+            y: icon.yPosition,
+          };
+        }),
+      ]);
+    }
+  }, [desktop]);
+
   const toggleApp = (app: ContextType["AppName"]) => {
     setOpenedApps((prev) => ({
       ...prev,
@@ -130,7 +156,6 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
         : b.label.localeCompare(a.label)
     );
 
-    // Snap sorted icons to grid positions (e.g., 4 per row)
     const gap = 24;
     const iconWidth = 80;
     const iconHeight = 100;

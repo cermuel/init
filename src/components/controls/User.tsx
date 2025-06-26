@@ -24,7 +24,7 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
   const userList = useSelector((state: RootState) => state.user.allUsers);
   const dispatch = useDispatch<AppDispatch>();
   const { theme } = useTheme();
-  const { openAuth, triggerFetch, resetWallpaper } = useDesktop();
+  const { openAuth, setIsFromReg, resetWallpaper } = useDesktop();
   const { showToast } = useToast();
 
   const [error, setError] = useState(false);
@@ -38,13 +38,16 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
 
   const handleSwitch = (email: string) => {
     if (email !== user?.emailAddress) {
+      const newUser = userList.find((u) => u.emailAddress === email);
       dispatch(switchUser(email));
 
       setTimeout(() => {
-        user?.token && dispatch(setToken(user.token));
-        triggerFetch();
+        newUser?.token && dispatch(setToken(newUser.token));
         openAuth(false);
       }, 200);
+      setTimeout(() => {
+        user?.token && setIsFromReg(false);
+      }, 400);
     }
   };
 
@@ -56,10 +59,10 @@ const User = ({ setOpenUser }: { setOpenUser: Dispatch<boolean> }) => {
   }, [user]);
 
   useEffect(() => {
-    if (userList.length == 0) {
+    if (!user) {
       setOpenUser(false);
     }
-  }, [userList]);
+  }, [user]);
 
   return (
     <div
