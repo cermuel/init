@@ -58,9 +58,7 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
   const [myApps, setMyApps] = useState<ContextType["CustomApp"][]>(() =>
     getCustomApps()
   );
-  const [icons, setIcons] = useState<DesktopIconType[]>(() =>
-    getInitialIcons(myApps)
-  );
+  const [icons, setIcons] = useState<DesktopIconType[]>([]);
   const [publishedApps, setPublishedApps] = useState<
     ContextType["CustomApp"][]
   >(() => getPublishedApps());

@@ -1,7 +1,12 @@
 import BatteryWidget from "@/components/widgets/BatteryWidget";
 import ClockWidget from "@/components/widgets/ClockWidget";
 import StickyNotesWidget from "@/components/widgets/StickyNotesWidget";
-import { DesktopIconType, WidgetIconType } from "@/types/desktop";
+import {
+  DesktopIconType,
+  UploadWidgetPayload,
+  UploadWidgetTypePayload,
+  WidgetIconType,
+} from "@/types/desktop";
 import { helpers } from "./helpers";
 import DigitalClock from "@/components/widgets/DigitalClock";
 import { ContextType } from "@/types/context";
@@ -58,6 +63,12 @@ export const getInitialIcons = (
   return [...defaultIcons, ...customIcons];
 };
 
+export const Widgets: UploadWidgetTypePayload[] = [
+  { id: "Battery", code: "Battery" },
+  { id: "Clock", code: "Clock" },
+  { id: "DigitalClock", code: "DigitalClock" },
+  { id: "StickyNotes", code: "StickyNotes" },
+];
 export const getInitialWidgets = (): WidgetIconType[] => {
   if (typeof window === "undefined") return [];
 

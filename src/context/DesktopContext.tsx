@@ -7,14 +7,25 @@ import { selectActiveUser } from "@/services/selectors/userSelector";
 import {
   useCreateDesktopMutation,
   useCustomBackgroundMutation,
+  useGetWidgetTypesQuery,
   useLazyGetDesktopQuery,
   useUploadIconMutation,
+  useUploadWidgetMutation,
+  useUploadWidgetTypeMutation,
 } from "@/services/slices/desktop/desktopSlice";
 import { removeUser } from "@/services/slices/userSlice";
 import { ErrorType } from "@/types/api";
 import { ContextType } from "@/types/context";
-import { DesktopIconType, WidgetIconType } from "@/types/desktop";
-import { defaultIcons, getInitialWidgets } from "@/utils/desktop.items";
+import {
+  DesktopIconType,
+  UploadWidgetPayload,
+  WidgetIconType,
+} from "@/types/desktop";
+import {
+  defaultIcons,
+  getInitialWidgets,
+  Widgets,
+} from "@/utils/desktop.items";
 import { helpers } from "@/utils/helpers";
 import React, { createContext, useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
@@ -49,8 +60,14 @@ export const DesktopProvider = ({
   const [triggerFetch, { data: desktop, isLoading, isFetching, error }] =
     useLazyGetDesktopQuery(undefined);
   const [createDesktop, { isLoading: creating }] = useCreateDesktopMutation();
+
   const [uploadBg] = useCustomBackgroundMutation();
   const [uploadIcon, { isLoading: uploading }] = useUploadIconMutation();
+  const { data: widgetTypes } = useGetWidgetTypesQuery();
+  const [uploadWidgetType, { isLoading: uploadingWidgetType }] =
+    useUploadWidgetTypeMutation();
+  const [uploadWidget, { isLoading: uploadingWidget }] =
+    useUploadWidgetMutation();
 
   const desktopError = error as ErrorType;
 
@@ -75,6 +92,21 @@ export const DesktopProvider = ({
       }, 200);
     }
   }, [user, isFromReg]);
+
+  useEffect(() => {
+    if (!widgetTypes || !widgetTypes.data) return;
+
+    if (widgetTypes.data.Items.length === 0) {
+      Widgets.forEach((widget) => {
+        uploadWidgetType({
+          code: widget.code,
+          id: widget.id,
+        });
+      });
+    } else {
+      console.log({ widgetTypes: widgetTypes });
+    }
+  }, [widgetTypes]);
 
   const handleIcons = async (desktopId: string) => {
     try {
@@ -107,6 +139,22 @@ export const DesktopProvider = ({
       const desktopId = res.id ?? res.data.id;
       handleIcons(desktopId);
       triggerFetch();
+    } catch (err: any) {
+      const errorMessage =
+        typeof err?.data?.message === "string"
+          ? err.data.message
+          : err?.data?.message?.[0] ?? "Error creating desktop";
+      console.log({ errorMessage });
+    }
+  };
+  const handleWidgets = async (dto: UploadWidgetPayload["dto"]) => {
+    if (!desktop) return;
+    try {
+      const res = await uploadWidget({
+        desktopId: desktop?.data.id,
+        dto,
+      }).unwrap();
+      console.log({ res });
     } catch (err: any) {
       const errorMessage =
         typeof err?.data?.message === "string"
@@ -183,6 +231,12 @@ export const DesktopProvider = ({
     newWidget = { ...newWidget, x: newX, y: newY };
 
     setWidgets((prevWidgets) => [...prevWidgets, newWidget]);
+    handleWidgets({
+      typeId: newWidget.id,
+      content: newWidget.content ?? "",
+      xPosition: newWidget.x,
+      yPosititon: newWidget.y,
+    });
   };
 
   const removeWidget = (widgetToRemove: WidgetIconType) => {

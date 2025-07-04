@@ -1,7 +1,7 @@
 "use client";
 
 import { useTheme } from "next-themes";
-import React, { useContext, useState } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { DesktopContext } from "@/context/DesktopContext";
 
 import { nanoid } from "nanoid";
@@ -15,9 +15,12 @@ import { IoClose } from "react-icons/io5";
 import ClockWidget from "./ClockWidget";
 import BatteryWidget from "./BatteryWidget";
 import StickyNotesWidget from "./StickyNotesWidget";
+import {
+  useGetWidgetTypesQuery,
+  useUploadWidgetMutation,
+} from "@/services/slices/desktop/desktopSlice";
 
-// For demo: these are the widget types you support
-const availableWidgets: { widget: WidgetIconType; label: string }[] = [
+const availWidgets: { widget: WidgetIconType; label: string }[] = [
   {
     label: "Digital Clock",
     widget: {
@@ -61,6 +64,39 @@ const availableWidgets: { widget: WidgetIconType; label: string }[] = [
 ];
 
 const WidgetManager = () => {
+  const { data: widgetTypes } = useGetWidgetTypesQuery();
+  const [uploadWidget] = useUploadWidgetMutation();
+  const [availTypes, setAvailTypes] =
+    useState<{ widget: WidgetIconType; label: string }[]>(availWidgets);
+
+  useEffect(() => {
+    if (!widgetTypes || !widgetTypes.data) return;
+
+    if (widgetTypes.data.Items.length > 0) {
+      const mappedWidgets: { widget: WidgetIconType; label: string }[] =
+        availWidgets
+          .map((avail) => {
+            const match = widgetTypes?.data?.Items.find(
+              (type) => type.code === avail.widget.type
+            );
+
+            if (!match) return;
+
+            return {
+              label: avail.label,
+              widget: {
+                ...avail.widget,
+                id: match.id,
+              },
+            };
+          })
+          .filter((w): w is { widget: WidgetIconType; label: string } =>
+            Boolean(w)
+          );
+      setAvailTypes(mappedWidgets);
+    }
+  }, [widgetTypes]);
+
   const [isDragging, setIsDragging] = useState(false);
   const { theme } = useTheme();
   const ctx = useContext(DesktopContext);
@@ -98,7 +134,7 @@ const WidgetManager = () => {
                 All Widgets
               </h2>
               <div className="flex flex-col gap-2 px-2">
-                {availableWidgets.map((widget, index) => (
+                {availTypes.map((widget, index) => (
                   <div
                     key={index}
                     draggable
@@ -118,7 +154,7 @@ const WidgetManager = () => {
                 Drag a widget and drop it anywhere on the screen
               </p>
               <div className="pt-4">
-                {availableWidgets.map(
+                {availTypes.map(
                   (
                     widget: { widget: WidgetIconType; label: string },
                     index: number

@@ -3,8 +3,12 @@ import { apiSlice } from "../apiSlice";
 import {
   DesktopResponse,
   UpdateIconPayload,
+  UpdateWidgetPayload,
   UploadBgPayload,
   UploadIconPayload,
+  UploadWidgetPayload,
+  UploadWidgetTypePayload,
+  UploadWidgetTypeResponse,
 } from "@/types/desktop";
 
 export const desktopSlice = apiSlice.injectEndpoints({
@@ -54,6 +58,39 @@ export const desktopSlice = apiSlice.injectEndpoints({
         };
       },
     }),
+    uploadWidget: builder.mutation<any, UploadWidgetPayload>({
+      query: (args) => ({
+        url: `desktops/${args.desktopId}/widgets`,
+        body: args.dto,
+        method: "POST",
+      }),
+    }),
+    updateWidget: builder.mutation<any, UpdateWidgetPayload>({
+      query: (args) => ({
+        url: `desktops/${args.desktopId}/widgets/${args.widgetId}`,
+        body: args.dto,
+        method: "PATCH",
+      }),
+    }),
+    uploadWidgetType: builder.mutation<any, UploadWidgetTypePayload>({
+      query: (dto) => ({
+        url: `desktops/widget/types`,
+        body: dto,
+        method: "POST",
+      }),
+    }),
+    getWidgetTypes: builder.query<UploadWidgetTypeResponse, void>({
+      query: () => ({
+        url: `desktops/widget/types`,
+        method: "GET",
+      }),
+    }),
+    getWidgets: builder.query<UploadWidgetTypeResponse, void>({
+      query: (dto) => ({
+        url: `desktops/widget/types`,
+        method: "GET",
+      }),
+    }),
   }),
 });
 
@@ -64,4 +101,8 @@ export const {
   useUploadIconMutation,
   useUploadIconImageMutation,
   useUpdateIconMutation,
+  useGetWidgetTypesQuery,
+  useUpdateWidgetMutation,
+  useUploadWidgetMutation,
+  useUploadWidgetTypeMutation,
 } = desktopSlice;

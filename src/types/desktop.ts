@@ -1,5 +1,6 @@
 import { ReactNode } from "react";
 import { ContextType } from "./context";
+import { StatusCode } from "./api";
 
 export type DesktopIconType = {
   name: ContextType["AppName"] | ContextType["CustomApp"]["id"];
@@ -71,5 +72,40 @@ export interface UpdateIconPayload extends UploadIconPayload {
 
 export interface UploadBgPayload {
   file: File;
+  desktopId: string;
+}
+
+export interface UploadWidgetTypePayload {
+  id: string;
+  code: string;
+}
+export interface UploadWidgetTypeResponse {
+  data: {
+    Items: {
+      id: string;
+      createdAt: Date;
+      updatedAt: Date;
+      deletedAt: Date | null;
+      code: string;
+    }[];
+  };
+  code: StatusCode;
+}
+export interface UploadWidgetPayload {
+  dto: {
+    content: string;
+    typeId: string;
+    xPosition: number;
+    yPosititon: number;
+  };
+  desktopId: string;
+}
+
+export interface UpdateWidgetPayload extends UploadWidgetPayload {
+  widgetId: string;
+}
+
+export interface DeleteWidgetPayload {
+  widgetId: string;
   desktopId: string;
 }

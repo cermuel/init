@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState } from "react";
 import { Rnd } from "react-rnd";
 import { useApps } from "@/hooks/useApp";
 import { ContextType } from "@/types/context";
@@ -16,26 +16,18 @@ import { useToast } from "@/hooks/useToast";
 import { useDispatch, useSelector } from "react-redux";
 import { selectActiveUser } from "@/services/selectors/userSelector";
 import { setToken } from "@/services/slices/userSlice";
-import { useDebounce } from "@/hooks/useDebounce";
-import { useUpdateIconMutation } from "@/services/slices/desktop/desktopSlice";
 
 export default function DesktopIcons() {
   const { toggleApp, icons, setIcons, setSelectedCustom, myApps, setMyApps } =
     useApps();
-  const { showIcons, widgets, setWidgets, desktop } = useDesktop();
+  const { showIcons, widgets, setWidgets } = useDesktop();
   const { showToast } = useToast();
-  const [updateIcon] = useUpdateIconMutation();
 
   const openApp = (app: ContextType["AppName"]) => {
     toggleApp(app);
   };
   const dispatch = useDispatch();
   const user = useSelector(selectActiveUser);
-
-  const [iconPositions, setIconPositions] = useState<{
-    [key: string]: { x: number; y: number };
-  }>({});
-
   useEffect(() => {
     if (user && user.token) {
       dispatch(setToken(user.token));
@@ -44,86 +36,33 @@ export default function DesktopIcons() {
   const [selectedIcon, setSelectedIcon] = useState<any>();
 
   const [showAlert, setShowAlert] = useState(false);
+  const handleDragStop = (index: number, x: number, y: number) => {
+    const newIcons = [...icons];
+    const { x: newX, y: newY } = helpers.resolveCollision(
+      x,
+      y,
+      index,
+      false,
+      newIcons,
+      widgets
+    );
+    newIcons[index] = { ...newIcons[index], x: newX, y: newY };
+    setIcons(newIcons);
+  };
 
-  const debouncedIconPositions = useDebounce(iconPositions, 1000);
-
-  useEffect(() => {
-    if (!desktop?.data?.id || Object.keys(debouncedIconPositions).length === 0)
-      return;
-
-    const updateIconPosition = async (
-      iconName: string,
-      position: { x: number; y: number }
-    ) => {
-      try {
-        const desktopIcon = desktop.data.icons.find(
-          (icon) => icon.code === iconName
-        );
-        if (!desktopIcon) return;
-
-        const update = await updateIcon({
-          desktopId: desktop.data.id,
-          iconId: desktopIcon.id,
-          dto: {
-            code: desktopIcon.code,
-            label: desktopIcon.label,
-            xPosition: position.x,
-            yPosition: position.y,
-            isCustomApp: desktopIcon.isCustomApp,
-          },
-        }).unwrap();
-        console.log({ update });
-      } catch (error) {
-        console.error("Failed to update icon position:", error);
-      }
-    };
-
-    // Update each changed icon position
-    Object.entries(debouncedIconPositions).forEach(([iconName, position]) => {
-      updateIconPosition(iconName, position);
-    });
-  }, [debouncedIconPositions, desktop, updateIcon, showToast]);
-
-  const handleDragStop = useCallback(
-    (index: number, x: number, y: number) => {
-      const newIcons = [...icons];
-      const { x: newX, y: newY } = helpers.resolveCollision(
-        x,
-        y,
-        index,
-        false,
-        newIcons,
-        widgets
-      );
-      newIcons[index] = { ...newIcons[index], x: newX, y: newY };
-      setIcons(newIcons);
-
-      // Update the debounced positions state
-      const iconName = newIcons[index].name;
-      setIconPositions((prev) => ({
-        ...prev,
-        [iconName]: { x: newX, y: newY },
-      }));
-    },
-    [icons, widgets, setIcons, setIconPositions]
-  );
-
-  const handleDragStopWidgets = useCallback(
-    (index: number, x: number, y: number) => {
-      const newWidgets = [...widgets];
-      const { x: newX, y: newY } = helpers.resolveCollision(
-        x,
-        y,
-        index,
-        true,
-        icons,
-        newWidgets
-      );
-      newWidgets[index] = { ...newWidgets[index], x: newX, y: newY };
-      setWidgets(newWidgets);
-    },
-    [widgets, icons, setWidgets]
-  );
+  const handleDragStopWidgets = (index: number, x: number, y: number) => {
+    const newWidgets = [...widgets];
+    const { x: newX, y: newY } = helpers.resolveCollision(
+      x,
+      y,
+      index,
+      true,
+      icons,
+      newWidgets
+    );
+    newWidgets[index] = { ...newWidgets[index], x: newX, y: newY };
+    setWidgets(newWidgets);
+  };
 
   const customApps = getCustomApps();
 
