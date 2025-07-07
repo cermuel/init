@@ -133,6 +133,7 @@ export const AppsProvider = ({ children }: { children: React.ReactNode }) => {
       setFocusedApp(app);
     }
   };
+
   const downloadApp = (app: ContextType["CustomApp"]) => {
     if (app) {
       const hasApp = myApps.filter((myApp) => myApp.id == app.id).length > 0;

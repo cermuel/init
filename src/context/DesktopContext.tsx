@@ -1,14 +1,20 @@
 "use client";
 
 import { DelayedLoader } from "@/components/ui/DelayedLoader";
+import BatteryWidget from "@/components/widgets/BatteryWidget";
+import Clock from "@/components/widgets/ClockComponent";
+import DigitalClock from "@/components/widgets/DigitalClock";
+import StickyNotesWidget from "@/components/widgets/StickyNotesWidget";
 import { useToast } from "@/hooks/useToast";
 import { wallpaperDB } from "@/lib/wallpaper";
 import { selectActiveUser } from "@/services/selectors/userSelector";
 import {
   useCreateDesktopMutation,
   useCustomBackgroundMutation,
+  useDeleteWidgetMutation,
   useGetWidgetTypesQuery,
   useLazyGetDesktopQuery,
+  useUpdateWidgetMutation,
   useUploadIconMutation,
   useUploadWidgetMutation,
   useUploadWidgetTypeMutation,
@@ -18,6 +24,7 @@ import { ErrorType } from "@/types/api";
 import { ContextType } from "@/types/context";
 import {
   DesktopIconType,
+  UpdateWidgetPayload,
   UploadWidgetPayload,
   WidgetIconType,
 } from "@/types/desktop";
@@ -46,9 +53,7 @@ export const DesktopProvider = ({
   const [customBg, setCustomBg] = useState<string | null>(null);
   const [showIcons, setShowIcons] = useState(true);
   const [brightness, setBrightness] = useState<number>(1);
-  const [widgets, setWidgets] = useState<WidgetIconType[]>(() =>
-    getInitialWidgets()
-  );
+  const [widgets, setWidgets] = useState<WidgetIconType[]>([]);
   const [showWidgetManager, setShowWidgetManager] = useState<boolean>(false);
   const [isFromReg, setIsFromReg] = useState(() => {
     if (typeof window !== "undefined") {
@@ -66,8 +71,9 @@ export const DesktopProvider = ({
   const { data: widgetTypes } = useGetWidgetTypesQuery();
   const [uploadWidgetType, { isLoading: uploadingWidgetType }] =
     useUploadWidgetTypeMutation();
-  const [uploadWidget, { isLoading: uploadingWidget }] =
-    useUploadWidgetMutation();
+  const [uploadWidget] = useUploadWidgetMutation();
+  const [updateWidget] = useUpdateWidgetMutation();
+  const [deleteWidget] = useDeleteWidgetMutation();
 
   const desktopError = error as ErrorType;
 
@@ -77,6 +83,7 @@ export const DesktopProvider = ({
       setIsFromReg(stored ? JSON.parse(stored) : true);
     }
   }, [user]);
+
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem("init_isFromReg", JSON.parse(isFromReg));
@@ -103,10 +110,10 @@ export const DesktopProvider = ({
           id: widget.id,
         });
       });
-    } else {
-      console.log({ widgetTypes: widgetTypes });
     }
   }, [widgetTypes]);
+
+  console.log({ widgets });
 
   const handleIcons = async (desktopId: string) => {
     try {
@@ -150,16 +157,49 @@ export const DesktopProvider = ({
   const handleWidgets = async (dto: UploadWidgetPayload["dto"]) => {
     if (!desktop) return;
     try {
-      const res = await uploadWidget({
+      await uploadWidget({
         desktopId: desktop?.data.id,
         dto,
       }).unwrap();
-      console.log({ res });
     } catch (err: any) {
       const errorMessage =
         typeof err?.data?.message === "string"
           ? err.data.message
-          : err?.data?.message?.[0] ?? "Error creating desktop";
+          : err?.data?.message?.[0] ?? "Error creating widget";
+      console.log({ errorMessage });
+    }
+  };
+  const handleUpdateWidget = async (
+    dto: UpdateWidgetPayload["dto"],
+    widgetId: string
+  ) => {
+    if (!desktop) return;
+    try {
+      await updateWidget({
+        desktopId: desktop?.data.id,
+        widgetId,
+        dto,
+      }).unwrap();
+    } catch (err: any) {
+      const errorMessage =
+        typeof err?.data?.message === "string"
+          ? err.data.message
+          : err?.data?.message?.[0] ?? "Error creating widget";
+      console.log({ errorMessage });
+    }
+  };
+  const handleDeleteWidget = async (widgetId: string) => {
+    if (!desktop) return;
+    try {
+      await deleteWidget({
+        desktopId: desktop?.data.id,
+        widgetId,
+      }).unwrap();
+    } catch (err: any) {
+      const errorMessage =
+        typeof err?.data?.message === "string"
+          ? err.data.message
+          : err?.data?.message?.[0] ?? "Error removing widget";
       console.log({ errorMessage });
     }
   };
@@ -178,13 +218,16 @@ export const DesktopProvider = ({
   }, [desktopError]);
 
   useEffect(() => {
-    const widgetsToSave = widgets.map(({ id, type, x, y, content }) => ({
-      id,
-      type,
-      x,
-      y,
-      content,
-    }));
+    const widgetsToSave = widgets.map(
+      ({ id, type, x, y, content, typeId }) => ({
+        id,
+        type,
+        x,
+        y,
+        content,
+        typeId,
+      })
+    );
     localStorage.setItem("init_widgets", JSON.stringify(widgetsToSave));
   }, [widgets]);
 
@@ -199,6 +242,40 @@ export const DesktopProvider = ({
     }
   }, []);
 
+  useEffect(() => {
+    if (!desktop) return;
+    setCustomBg(desktop.data.customBackground);
+    if (!desktop.data.icons || desktop.data.icons.length === 0) {
+      handleIcons(desktop.data.id);
+    }
+
+    if (desktop.data.widgets) {
+      setWidgets(
+        desktop.data.widgets.map((w) => {
+          const type = w.type.code;
+          return {
+            id: w.id,
+            typeId: w.typeId,
+            x: w.xPosition,
+            y: w.yPosition,
+            type,
+            widget: () =>
+              type === "Clock" ? (
+                <Clock />
+              ) : type == "Battery" ? (
+                <BatteryWidget />
+              ) : type == "DigitalClock" ? (
+                <DigitalClock />
+              ) : (
+                <StickyNotesWidget content="" id="" onSave={() => {}} />
+              ),
+            content: w.content,
+          };
+        })
+      );
+    }
+  }, [desktop]);
+
   const addWidget = ({
     newWidget,
     icons,
@@ -211,14 +288,13 @@ export const DesktopProvider = ({
     index: number;
   }) => {
     const widgetExists = widgets.some(
-      (widget) => widget.type === newWidget.type || widget.id === newWidget.id
+      (widget) =>
+        widget.typeId === newWidget.typeId || widget.type === newWidget.type
     );
 
     if (widgetExists) {
-      console.warn(
-        `Widget with type "${newWidget.type}" or id "${newWidget.id}" already exists.`
-      );
-      return; // Do not add the widget if it already exists
+      showToast(`Widget already exists.`, "warning");
+      return;
     }
     const { x: newX, y: newY } = helpers.resolveCollision(
       newWidget.x,
@@ -232,26 +308,29 @@ export const DesktopProvider = ({
 
     setWidgets((prevWidgets) => [...prevWidgets, newWidget]);
     handleWidgets({
-      typeId: newWidget.id,
-      content: newWidget.content ?? "",
-      xPosition: newWidget.x,
-      yPosititon: newWidget.y,
+      typeId: newWidget.typeId,
+      content: newWidget.content ?? "No content",
+      xPosition: parseFloat(Number(newWidget.x).toFixed(3)),
+      yPosition: parseFloat(Number(newWidget.y).toFixed(3)),
     });
   };
 
-  const removeWidget = (widgetToRemove: WidgetIconType) => {
+  const removeWidget = async (widgetToRemove: WidgetIconType) => {
     setWidgets((prevWidgets) =>
       prevWidgets.filter((widget) => widget.type !== widgetToRemove.type)
     );
-  };
+    const widgetToDelete = widgets.find(
+      (widget) =>
+        widget.typeId === widgetToRemove.typeId ||
+        widget.type === widgetToRemove.type
+    );
 
-  useEffect(() => {
-    if (!desktop) return;
-    setCustomBg(desktop.data.customBackground);
-    if (!desktop.data.icons || desktop.data.icons.length === 0) {
-      handleIcons(desktop.data.id);
+    console.log({ widgetToDelete });
+    if (!widgetToDelete) {
+      return;
     }
-  }, [desktop]);
+    await handleDeleteWidget(widgetToDelete.id);
+  };
 
   const setWallpaperFromFile = async (file?: File) => {
     if (!desktop || !user) {
@@ -310,6 +389,7 @@ export const DesktopProvider = ({
         isFromReg,
         setIsFromReg,
         desktop,
+        handleUpdateWidget,
       }}
     >
       <DelayedLoader

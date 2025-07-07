@@ -2,6 +2,7 @@ import { Dispatch } from "react";
 import {
   DesktopIconType,
   DesktopResponse,
+  UpdateWidgetPayload,
   WidgetIconType,
   WidgetType,
 } from "./desktop";
@@ -101,6 +102,10 @@ type DesktopContextType = {
   removeWidget: (Widget: WidgetIconType) => void;
   auth: boolean;
   openAuth: Dispatch<boolean>;
+  handleUpdateWidget: (
+    dto: UpdateWidgetPayload["dto"],
+    widgetId: string
+  ) => void;
 };
 
 type FileContent = {

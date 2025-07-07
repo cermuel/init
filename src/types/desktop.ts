@@ -19,6 +19,7 @@ export type WidgetIconType = {
   y: number;
   content?: string;
   widget: () => React.JSX.Element;
+  typeId: string;
 };
 
 export type WidgetType = {
@@ -43,13 +44,41 @@ export interface DesktopIcon {
   image: string | null;
 }
 
+export interface WidgetTypeResponse {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  code: string;
+}
+
+export interface DesktopWidgetType {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  code: "Battery" | "Clock" | "StickyNotes" | "DigitalClock";
+}
+export interface DesktopWidget {
+  id: string;
+  createdAt: string;
+  updatedAt: string;
+  deletedAt: string | null;
+  xPosition: number;
+  yPosition: number;
+  content: string;
+  type: DesktopWidgetType;
+  typeId: string;
+  desktopId: string;
+}
+
 export interface DesktopResponse {
   data: {
     id: string;
     createdAt: string;
     updatedAt: string;
     deletedAt: string | null;
-    widgets: any[];
+    widgets: DesktopWidget[];
     icons: DesktopIcon[];
     userId: string;
     customBackground: string | null;
@@ -96,7 +125,7 @@ export interface UploadWidgetPayload {
     content: string;
     typeId: string;
     xPosition: number;
-    yPosititon: number;
+    yPosition: number;
   };
   desktopId: string;
 }

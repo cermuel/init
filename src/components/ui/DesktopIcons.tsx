@@ -20,7 +20,7 @@ import { setToken } from "@/services/slices/userSlice";
 export default function DesktopIcons() {
   const { toggleApp, icons, setIcons, setSelectedCustom, myApps, setMyApps } =
     useApps();
-  const { showIcons, widgets, setWidgets } = useDesktop();
+  const { showIcons, widgets, setWidgets, handleUpdateWidget } = useDesktop();
   const { showToast } = useToast();
 
   const openApp = (app: ContextType["AppName"]) => {
@@ -50,7 +50,22 @@ export default function DesktopIcons() {
     setIcons(newIcons);
   };
 
-  const handleDragStopWidgets = (index: number, x: number, y: number) => {
+  const handleDragStopWidgets = (
+    index: number,
+    x: number,
+    y: number,
+    typeId: string,
+    id: string
+  ) => {
+    handleUpdateWidget(
+      {
+        xPosition: x,
+        yPosition: y,
+        content: "No Content",
+        typeId,
+      },
+      id
+    );
     const newWidgets = [...widgets];
     const { x: newX, y: newY } = helpers.resolveCollision(
       x,
@@ -61,6 +76,7 @@ export default function DesktopIcons() {
       newWidgets
     );
     newWidgets[index] = { ...newWidgets[index], x: newX, y: newY };
+
     setWidgets(newWidgets);
   };
 
@@ -185,7 +201,13 @@ export default function DesktopIcons() {
             bounds="parent"
             className="z-20 transition-all duration-50 relative"
             onDragStop={(_, data) =>
-              handleDragStopWidgets(index, data.x, data.y)
+              handleDragStopWidgets(
+                index,
+                data.x,
+                data.y,
+                widget.typeId,
+                widget.id
+              )
             }
           >
             <div className="w-full h-full flex justify-center items-center">

@@ -72,6 +72,15 @@ export const desktopSlice = apiSlice.injectEndpoints({
         method: "PATCH",
       }),
     }),
+    deleteWidget: builder.mutation<
+      any,
+      { desktopId: string; widgetId: string }
+    >({
+      query: (args) => ({
+        url: `desktops/${args.desktopId}/widgets/${args.widgetId}`,
+        method: "DELETE",
+      }),
+    }),
     uploadWidgetType: builder.mutation<any, UploadWidgetTypePayload>({
       query: (dto) => ({
         url: `desktops/widget/types`,
@@ -105,4 +114,5 @@ export const {
   useUpdateWidgetMutation,
   useUploadWidgetMutation,
   useUploadWidgetTypeMutation,
+  useDeleteWidgetMutation,
 } = desktopSlice;

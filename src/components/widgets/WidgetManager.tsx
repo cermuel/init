@@ -29,6 +29,7 @@ const availWidgets: { widget: WidgetIconType; label: string }[] = [
       id: "Digital-Clock-Widget",
       type: "DigitalClock",
       widget: () => <DigitalClock />,
+      typeId: "",
     },
   },
   {
@@ -39,6 +40,7 @@ const availWidgets: { widget: WidgetIconType; label: string }[] = [
       id: "Clock-Widget",
       type: "Clock",
       widget: () => <ClockWidget />,
+      typeId: "",
     },
   },
   {
@@ -49,6 +51,7 @@ const availWidgets: { widget: WidgetIconType; label: string }[] = [
       id: "Battery-Widget",
       type: "Battery",
       widget: () => <BatteryWidget />,
+      typeId: "",
     },
   },
   {
@@ -59,6 +62,7 @@ const availWidgets: { widget: WidgetIconType; label: string }[] = [
       id: "StickyNotes-Widget",
       type: "StickyNotes",
       widget: () => <StickyNotesWidget id="" content="" onSave={() => {}} />,
+      typeId: "",
     },
   },
 ];
@@ -87,6 +91,7 @@ const WidgetManager = () => {
               widget: {
                 ...avail.widget,
                 id: match.id,
+                typeId: match.id,
               },
             };
           })
@@ -111,8 +116,6 @@ const WidgetManager = () => {
 
   if (!ctx) return null;
 
-  const { setWidgets } = ctx;
-
   return (
     <div
       className={`w-full h-full fixed top-0 left-0 z-[100] transition-all duration-500 ${
@@ -128,7 +131,6 @@ const WidgetManager = () => {
           }`}
         >
           <div className="flex w-full flex-1">
-            {/* Left: Available widgets */}
             <section className="w-[25%] py-5 border-r border-gray-500 text-sm">
               <h2 className="font-semibold mb-4 border-b-[0.3px] px-5 pb-4 border-gray-500">
                 All Widgets
@@ -148,7 +150,6 @@ const WidgetManager = () => {
               </div>
             </section>
 
-            {/* Right: Placeholder */}
             <section className="w-[75%] p-5">
               <p className="text-sm text-gray-600 dark:text-gray-400">
                 Drag a widget and drop it anywhere on the screen
@@ -171,15 +172,16 @@ const WidgetManager = () => {
                       className={`z-20 transition-all text-[10px] duration-50 rounded-xl py-2 px-4 group ${
                         theme === "dark" ? "bg-gray-900/70" : "bg-gray-500/50"
                       }  relative`}
-                      onDragStop={(e, data) => {
-                        setIsDragging(false); // Reset after drag
-                        const target = e.target as HTMLElement; // Type assertion to access DOM methods safely
+                      onDragStop={(e) => {
+                        console.log({ e: e.target });
+                        if ((e.target as HTMLElement).closest("button")) return;
+                        setIsDragging(false);
+                        const target = e.target as HTMLElement;
                         const PADDING = 100;
                         if (!target) return;
 
                         const rect = target.getBoundingClientRect();
 
-                        // Subtract the padding to normalize to actual screen position
                         const x = Math.max(0, rect.left - 0);
                         const y = Math.max(0, rect.top - PADDING);
                         addWidget({
@@ -189,8 +191,9 @@ const WidgetManager = () => {
                           newWidget: {
                             x,
                             y,
-                            id: widget.widget.id,
+                            id: "",
                             type: widget.widget.type,
+                            typeId: widget.widget.id,
                             widget: widget.widget.widget,
                           },
                         });
@@ -199,13 +202,15 @@ const WidgetManager = () => {
                       }}
                     >
                       <button
-                        onClick={() => {
+                        onClick={(e) => {
+                          e.stopPropagation();
                           const widgetToRemove: WidgetIconType = {
                             x: 0,
                             y: 0,
-                            id: widget.widget.id,
+                            id: "",
                             type: widget.widget.type,
                             widget: widget.widget.widget,
+                            typeId: widget.widget.id,
                           };
                           removeWidget(widgetToRemove);
                         }}
