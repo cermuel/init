@@ -1,15 +1,15 @@
 import React, { ReactNode, useEffect, useRef, useState } from "react";
 // or wherever you export useFiles
-import { ContextType, FileType } from "@/types/context";
+import { AppName, ContextType, FileType } from "@/types/context";
 import { useFiles } from "@/hooks/useFile";
-import { BsFileEarmarkCode, BsSearch } from "react-icons/bs";
-import { LuFileImage, LuFileTerminal, LuFileText } from "react-icons/lu";
-import Image from "next/image";
+import { BsSearch } from "react-icons/bs";
+
 import { useTheme } from "next-themes";
 import {
   AiOutlineClockCircle,
   AiOutlineDesktop,
   AiOutlineCloud,
+  AiOutlineLoading3Quarters,
 } from "react-icons/ai";
 import { SlArrowDownCircle, SlTrash } from "react-icons/sl";
 import { GoFile } from "react-icons/go";
@@ -18,7 +18,7 @@ import Trash from "../ui/finder/trash";
 import NotReady from "../ui/finder/not+ready";
 
 interface FinderProps {
-  onOpenFile: any;
+  onOpenFile: (file: FileType) => void;
   handleDockApps: (app: ContextType["AppName"]) => void;
   isTrash?: boolean;
 }
@@ -42,7 +42,13 @@ export default function Finder({
   isTrash,
 }: FinderProps) {
   const clickTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const { moveToRecycleBin, deleteFile } = useFiles();
+  const {
+    moveToRecycleBin,
+    deleteFile,
+    openFile: selectFile,
+    opening,
+    isLoading,
+  } = useFiles();
   const [selectedFile, setSelectedFile] = useState<FileType | null>(null);
   const [selectedControl, setSelectedControl] =
     useState<ControlType>("recents");
@@ -55,8 +61,19 @@ export default function Finder({
   const { theme } = useTheme();
 
   const openFile = (file: FileType) => {
-    onOpenFile(file);
-    file.filetype && handleDockApps(file.filetype);
+    selectFile(file.id).then((data) => {
+      onOpenFile({
+        content: {
+          content: data.content.content,
+          id: data.content.id,
+          title: data.fileName,
+          language: data.fileType === "code" ? data.fileName.split(".")[1] : "",
+        },
+        id: data.id,
+        filetype: data.fileType as AppName,
+      });
+      handleDockApps(file.filetype);
+    });
   };
 
   const clickCount = useRef(0);
@@ -153,45 +170,63 @@ export default function Finder({
           );
         })}
       </div>
-      <div className="flex flex-col flex-1">
-        <div
-          className={`p-4 ${theme == "dark" ? "bg-gray-700" : "bg-gray-100"}`}
-        >
-          <div className={`relative mx-auto w-full`}>
-            <input
-              type="text"
-              placeholder="Search files..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className={`w-full pl-10 pr-4 py-2 text-xs font-medium rounded-sm ${
-                theme === "dark"
-                  ? "bg-gray-600 text-white placeholder-gray-400"
-                  : "bg-white text-gray-900 placeholder-gray-500"
-              } focus:outline-none focus:ring-[0.5px] focus:ring-blue-500`}
-            />
-            <BsSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+      {isLoading ? (
+        <div className="flex flex-col flex-1">
+          <div
+            className={`p-4 w-full h-full gap-2 flex flex-col justify-center items-center ${
+              theme == "dark" ? "bg-gray-700" : "bg-gray-100"
+            }`}
+          >
+            <AiOutlineLoading3Quarters className="animate-spin" size={24} />
+            <h1 className="animate-pulse">Getting your files...</h1>
           </div>
         </div>
-        <div
-          className={`flex flex-wrap flex-1 gap-10 justify-around items-start place-items-start overflow-scroll p-4 ${
-            theme == "dark" ? "bg-gray-700" : "bg-gray-100"
-          }`}
-        >
-          {selectedControl == "recents" ? (
-            <Recents
-              handleClickOrDoubleClick={handleClickOrDoubleClick}
-              searchQuery={searchQuery}
-            />
-          ) : selectedControl == "trash" ? (
-            <Trash
-              handleClick={(file) => setSelectedFile(file)}
-              searchQuery={searchQuery}
-            />
-          ) : (
-            <NotReady control={selectedControl} />
+      ) : (
+        <div className="flex flex-col flex-1 relative">
+          {opening && (
+            <div className="absolute p-4 top-1/2 left-1/2 -translate-1/2 bg-white shadow border rounded-md">
+              <h1 className="text-[#141414]">Opening file</h1>
+            </div>
           )}
+          <div
+            className={`p-4 ${theme == "dark" ? "bg-gray-700" : "bg-gray-100"}`}
+          >
+            <div className={`relative mx-auto w-full`}>
+              <input
+                type="text"
+                placeholder="Search files..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={`w-full pl-10 pr-4 py-2 text-xs font-medium rounded-sm ${
+                  theme === "dark"
+                    ? "bg-gray-600 text-white placeholder-gray-400"
+                    : "bg-white text-gray-900 placeholder-gray-500"
+                } focus:outline-none focus:ring-[0.5px] focus:ring-blue-500`}
+              />
+              <BsSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+            </div>
+          </div>
+          <div
+            className={`flex flex-wrap flex-1 gap-10 justify-around items-start place-items-start overflow-scroll p-4 ${
+              theme == "dark" ? "bg-gray-700" : "bg-gray-100"
+            }`}
+          >
+            {selectedControl == "recents" ? (
+              <Recents
+                handleClickOrDoubleClick={handleClickOrDoubleClick}
+                searchQuery={searchQuery}
+              />
+            ) : selectedControl == "trash" ? (
+              <Trash
+                handleClick={(file) => setSelectedFile(file)}
+                searchQuery={searchQuery}
+              />
+            ) : (
+              <NotReady control={selectedControl} />
+            )}
+          </div>
         </div>
-      </div>
+      )}
       {selectedFile && (
         <div
           className="fixed top-0 left-0 w-full h-full bg-black/40 z-50 flex items-center justify-center"

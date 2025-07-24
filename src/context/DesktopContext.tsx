@@ -113,8 +113,6 @@ export const DesktopProvider = ({
     }
   }, [widgetTypes]);
 
-  console.log({ widgets });
-
   const handleIcons = async (desktopId: string) => {
     try {
       await Promise.all(
@@ -325,7 +323,6 @@ export const DesktopProvider = ({
         widget.type === widgetToRemove.type
     );
 
-    console.log({ widgetToDelete });
     if (!widgetToDelete) {
       return;
     }

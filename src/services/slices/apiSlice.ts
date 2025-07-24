@@ -18,5 +18,5 @@ export const apiSlice = createApi({
     },
   }),
   endpoints: (builder) => ({}),
-  tagTypes: ["User", "Desktop"],
+  tagTypes: ["User", "Desktop", "File"],
 });

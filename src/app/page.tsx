@@ -35,6 +35,8 @@ import Brightness from "@/components/ui/Brightness";
 import { LuLayoutPanelTop } from "react-icons/lu";
 import AIAgent from "@/components/ai/AIAgent";
 import { setToken } from "@/services/slices/userSlice";
+import MissionControl from "@/components/controls/MissionControl";
+
 export default function Home() {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
@@ -62,8 +64,10 @@ export default function Home() {
   const [currentSafariFile, setCurrentSafariFile] = useState<FileType>();
   const [openUser, setOpenUser] = useState<boolean>(false);
   const [showCC, setShowCC] = useState<boolean>(false);
+  const [missionControlMode, setMissionControlMode] = useState(true);
 
   const onOpenFile = (file: FileType) => {
+    console.log({ file });
     if (file?.filetype == "notes") {
       setcurrentNoteFile(file);
     } else if (file?.filetype == "code") {
@@ -84,6 +88,10 @@ export default function Home() {
   };
 
   useEffect(() => {
+    let startX = 0;
+    let startY = 0;
+    let fingerCount = 0;
+
     const handleContextMenu = (e: MouseEvent) => {
       e.preventDefault();
       setContextMenu({ x: e.clientX, y: e.clientY, visible: true });
@@ -99,14 +107,36 @@ export default function Home() {
       setContextMenu((prev: any) => ({ ...prev, visible: false }));
     };
 
+    const handleKeyDown = (e: KeyboardEvent) => {
+      console.log({ e: e.key, missionControlMode });
+      if (e.key === "ArrowUp") {
+        setMissionControlMode(true);
+      }
+      if (e.key === "ArrowDown") {
+        setMissionControlMode(false);
+      }
+    };
+
     window.addEventListener("contextmenu", handleContextMenu);
     window.addEventListener("click", handleClick);
+    window.addEventListener("keydown", handleKeyDown);
 
     return () => {
       window.removeEventListener("contextmenu", handleContextMenu);
       window.removeEventListener("click", handleClick);
+      window.removeEventListener("keydown", handleKeyDown);
     };
   }, []);
+
+  // useEffect(() => {
+  //   const handleKeyDown = (e: KeyboardEvent) => {
+  //     if (e.key === "F3" || (e.ctrlKey && e.key === "ArrowUp")) {
+  //       setMissionControlMode((prev) => !prev);
+  //     }
+  //   };
+  //   window.addEventListener("keydown", handleKeyDown);
+  //   return () => window.removeEventListener("keydown", handleKeyDown);
+  // }, []);
 
   useEffect(() => setMounted(true), []);
 
@@ -132,8 +162,44 @@ export default function Home() {
     }
   };
 
+  const gridCols = 3;
+  const winW = 400;
+  const winH = 250;
+  const gap = 40;
+  const openAppList = [
+    openedApps.notes && !minimizedApps.notes && { key: "notes" },
+    openedApps.code && !minimizedApps.code && { key: "code" },
+    openedApps.safari && !minimizedApps.safari && { key: "safari" },
+    openedApps.terminal && !minimizedApps.terminal && { key: "terminal" },
+    openedApps.music && !minimizedApps.music && { key: "music" },
+    openedApps.finder && !minimizedApps.finder && { key: "finder" },
+    openedApps.store && !minimizedApps.store && { key: "store" },
+    openedApps.bin && !minimizedApps.bin && { key: "bin" },
+    openedApps.applauncher &&
+      !minimizedApps.applauncher &&
+      selectedCustom && { key: "applauncher" },
+  ].filter(Boolean) as { key: string }[];
+
+  // Helper to get position for each app in grid
+  const getGridPosition = (idx: number) => {
+    const col = idx % gridCols;
+    const row = Math.floor(idx / gridCols);
+    return {
+      x: col * (winW + gap) + 120,
+      y: row * (winH + gap) + 80,
+    };
+  };
+
   return (
     <>
+      {/* {missionControlMode && (
+        <MissionControl
+          openedApps={openedApps}
+          focusApp={focusApp}
+          minimizedApps={minimizedApps}
+          setShowMissionControl={setMissionControlMode}
+        />
+      )} */}
       <AIAgent />
       <Brightness />
       {auth && <Auth />}
@@ -232,110 +298,188 @@ export default function Home() {
           <>
             <WidgetManager />
             <DesktopIcons />
-
-            {openedApps.notes && !minimizedApps.notes && (
-              <AppWindow
-                appName="notes"
-                title="Notes"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <NotesApp currentNote={currentNoteFile} />
-              </AppWindow>
-            )}
-
-            {openedApps.code && !minimizedApps.code && (
-              <AppWindow
-                appName="code"
-                title="Code"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <CodeEditorApp currentCode={currentCodeFile} />
-              </AppWindow>
-            )}
-
-            {openedApps.safari && !minimizedApps.safari && (
-              <AppWindow
-                appName="safari"
-                title="Safari"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <BrowserApp url={currentSafariFile} />
-              </AppWindow>
-            )}
-
-            {openedApps.terminal && !minimizedApps.terminal && (
-              <AppWindow
-                appName="terminal"
-                title="Terminal"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <TerminalApp />
-              </AppWindow>
-            )}
-
-            {openedApps.music && !minimizedApps.music && (
-              <AppWindow
-                appName="music"
-                title="Music"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <MusicApp />
-              </AppWindow>
-            )}
-
-            {openedApps.finder && !minimizedApps.finder && (
-              <AppWindow
-                appName="finder"
-                title="Finder"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <Finder
-                  onOpenFile={onOpenFile}
-                  handleDockApps={handleDockApps}
-                />
-              </AppWindow>
-            )}
-
-            {openedApps.store && !minimizedApps.store && (
-              <AppWindow
-                appName="store"
-                title="Init Store"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <InitStore />
-              </AppWindow>
-            )}
-
-            {openedApps.bin && !minimizedApps.bin && (
-              <AppWindow
-                appName="bin"
-                title="Bin"
-                isMaximized={isMaximized}
-                setIsMaximized={setIsMaximized}
-              >
-                <Finder
-                  onOpenFile={onOpenFile}
-                  handleDockApps={handleDockApps}
-                  isTrash={true}
-                />
-              </AppWindow>
-            )}
-            {openedApps.applauncher &&
-              !minimizedApps.applauncher &&
-              selectedCustom && (
-                <AppLauncher
-                  isMaximized={isMaximized}
-                  setIsMaximized={setIsMaximized}
-                  app={selectedCustom}
-                />
-              )}
+            {openAppList.map((app, idx) => {
+              const { key } = app;
+              const gridPos = getGridPosition(idx);
+              if (key === "notes") {
+                return (
+                  <AppWindow
+                    key="notes"
+                    appName="notes"
+                    title="Notes"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <NotesApp currentNote={currentNoteFile} />
+                  </AppWindow>
+                );
+              }
+              if (key === "code") {
+                return (
+                  <AppWindow
+                    key="code"
+                    appName="code"
+                    title="Code"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <CodeEditorApp currentCode={currentCodeFile} />
+                  </AppWindow>
+                );
+              }
+              if (key === "safari") {
+                return (
+                  <AppWindow
+                    key="safari"
+                    appName="safari"
+                    title="Safari"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <BrowserApp url={currentSafariFile} />
+                  </AppWindow>
+                );
+              }
+              if (key === "terminal") {
+                return (
+                  <AppWindow
+                    key="terminal"
+                    appName="terminal"
+                    title="Terminal"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <TerminalApp />
+                  </AppWindow>
+                );
+              }
+              if (key === "music") {
+                return (
+                  <AppWindow
+                    key="music"
+                    appName="music"
+                    title="Music"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <MusicApp />
+                  </AppWindow>
+                );
+              }
+              if (key === "finder") {
+                return (
+                  <AppWindow
+                    key="finder"
+                    appName="finder"
+                    title="Finder"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <Finder
+                      onOpenFile={onOpenFile}
+                      handleDockApps={handleDockApps}
+                    />
+                  </AppWindow>
+                );
+              }
+              if (key === "store") {
+                return (
+                  <AppWindow
+                    key="store"
+                    appName="store"
+                    title="Init Store"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <InitStore />
+                  </AppWindow>
+                );
+              }
+              if (key === "bin") {
+                return (
+                  <AppWindow
+                    key="bin"
+                    appName="bin"
+                    title="Bin"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    {...(missionControlMode
+                      ? {
+                          missionControlMode: true,
+                          missionControlPosition: gridPos,
+                          missionControlScale: 0.7,
+                        }
+                      : {})}
+                  >
+                    <Finder
+                      onOpenFile={onOpenFile}
+                      handleDockApps={handleDockApps}
+                      isTrash={true}
+                    />
+                  </AppWindow>
+                );
+              }
+              if (key === "applauncher" && selectedCustom) {
+                return (
+                  <AppLauncher
+                    key="applauncher"
+                    isMaximized={isMaximized}
+                    setIsMaximized={setIsMaximized}
+                    app={selectedCustom}
+                  />
+                );
+              }
+              return null;
+            })}
           </>
         </div>
         <div className="fixed bottom-0 flex justify-center w-full z-90">

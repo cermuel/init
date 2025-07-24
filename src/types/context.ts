@@ -7,7 +7,7 @@ import {
   WidgetType,
 } from "./desktop";
 
-type AppName =
+export type AppName =
   | "notes"
   | "music"
   | "photos"
@@ -20,7 +20,7 @@ type AppName =
   | "applauncher"
   | "store";
 
-type AppCategory =
+export type AppCategory =
   | "Productivity"
   | "Utilities"
   | "Entertainment"

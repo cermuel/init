@@ -16,6 +16,9 @@ type Props = {
   children: React.ReactNode;
   isMaximized: boolean;
   setIsMaximized: Dispatch<boolean>;
+  missionControlMode?: boolean;
+  missionControlPosition?: { x: number; y: number };
+  missionControlScale?: number;
 };
 
 export default function AppWindow({
@@ -24,6 +27,9 @@ export default function AppWindow({
   children,
   isMaximized,
   setIsMaximized,
+  missionControlMode = false,
+  missionControlPosition = { x: 0, y: 0 },
+  missionControlScale = 1,
 }: Props) {
   const { closeApp, minimizeApp, focusApp, focusedApp, minimizedApps } =
     useApps();
@@ -47,6 +53,46 @@ export default function AppWindow({
 
     setIsMaximized(!isMaximized);
   };
+  const pos = rndRef.current?.getDraggablePosition();
+  const x = pos?.x || 1;
+  const y = pos?.y || 1;
+  if (missionControlMode) {
+    return (
+      <motion.div
+        key={appName}
+        initial={{
+          opacity: 1,
+          scale: 1,
+          x,
+          y,
+        }}
+        animate={{
+          opacity: 1,
+          scale: missionControlScale,
+          x: missionControlPosition.x,
+          y: missionControlPosition.y,
+        }}
+        transition={{ type: "spring", stiffness: 120, damping: 18 }}
+        style={{
+          position: "absolute",
+          width: 400,
+          height: 250,
+          zIndex: 200,
+        }}
+      >
+        <div className="rounded-xl overflow-hidden shadow-xl w-full h-full pointer-events-none select-none">
+          <div className="flex flex-col h-full">
+            <div className="app-header rounded-t-xl flex items-center justify-between bg-[#efefef] px-4 py-2 cursor-default select-none">
+              <span className="font-medium capitalize text-sm text-black/90">
+                {title}
+              </span>
+            </div>
+            <div className="flex-1 overflow-auto opacity-60">{children}</div>
+          </div>
+        </div>
+      </motion.div>
+    );
+  }
 
   return (
     <AnimatePresence>
